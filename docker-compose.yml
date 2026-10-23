@@ -1,0 +1,90 @@
+name: ragemp
+
+# RAGE:MP server stack.
+#
+#   docker compose up -d --build     # core server (server-data bind mount)
+#   docker compose --profile db up -d --build   # + MariaDB for roleplay builds
+#
+# All settings come from .env (copy .env.example to .env first).
+
+services:
+  ragemp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        RAGEMP_SERVER_URL: ${RAGEMP_SERVER_URL:-https://cdn.rage.mp/updater/prerelease/server-files/linux_x64.tar.gz}
+        RAGEMP_ARCHIVE_SHA256: ${RAGEMP_ARCHIVE_SHA256:-}
+    image: ragemp-server:local
+    container_name: ragemp
+    restart: unless-stopped
+    user: "${RAGEMP_UID:-1000}:${RAGEMP_GID:-1000}"
+    env_file:
+      - .env
+    environment:
+      TZ: ${TZ:-UTC}
+    ports:
+      # RAGE:MP listens on both UDP and TCP for the same port; publish both.
+      - "${RAGE_PORT:-22005}:${RAGE_PORT:-22005}/udp"
+      - "${RAGE_PORT:-22005}:${RAGE_PORT:-22005}/tcp"
+      # port+1 serves client packages over HTTP; it must also be reachable.
+      - "${RAGE_HTTP_PORT:-22006}:${RAGE_HTTP_PORT:-22006}/tcp"
+    volumes:
+      - ./server-data:/data
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+    stop_grace_period: 30s
+    security_opt:
+      - no-new-privileges:true
+
+  # Optional database for roleplay gamemodes. Enable with --profile db.
+  mariadb:
+    image: mariadb:11
+    container_name: ragemp-db
+    profiles: ["db"]
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:-change-me-root}
+      MARIADB_DATABASE: ${MARIADB_DATABASE:-ragemp}
+      MARIADB_USER: ${MARIADB_USER:-ragemp}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD:-change-me}
+      TZ: ${TZ:-UTC}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    ports:
+      # Bound to loopback only: reach it through an SSH tunnel, never expose it.
+      - "127.0.0.1:${MARIADB_PORT:-3306}:3306"
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    security_opt:
+      - no-new-privileges:true
+
+  # Optional web UI for the database. Enable with --profile db --profile admin.
+  adminer:
+    image: adminer:latest
+    container_name: ragemp-adminer
+    profiles: ["admin"]
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${ADMINER_PORT:-8080}:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: mariadb
+    depends_on:
+      - mariadb
+
+volumes:
+  mariadb-data:

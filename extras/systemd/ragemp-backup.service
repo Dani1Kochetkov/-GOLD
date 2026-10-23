@@ -1,0 +1,18 @@
+# Optional: daily backups via systemd timer.
+#
+#   sudo cp extras/systemd/ragemp-backup.* /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now ragemp-backup.timer
+#   systemctl list-timers ragemp-backup.timer
+#
+# Backups land in /opt/gold/backups and are pruned by BACKUP_KEEP (default 14).
+# Copy them off the machine as well — a backup on the same disk is not a backup.
+
+[Unit]
+Description=RAGE:MP server backup
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/gold
+Environment=BACKUP_KEEP=14
+ExecStart=/opt/gold/scripts/backup.sh

@@ -1,0 +1,26 @@
+# Optional: run the stack on host boot.
+#
+#   sudo cp extras/systemd/ragemp.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now ragemp.service
+#
+# Docker already restarts containers with `restart: unless-stopped`, so this
+# unit mainly guarantees that the image exists and compose is applied after a
+# reboot. Adjust WorkingDirectory to your checkout path.
+
+[Unit]
+Description=RAGE:MP server (docker compose stack)
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/gold
+ExecStart=/usr/bin/docker compose up -d
+ExecStop=/usr/bin/docker compose stop
+TimeoutStartSec=300
+
+[Install]
+WantedBy=multi-user.target

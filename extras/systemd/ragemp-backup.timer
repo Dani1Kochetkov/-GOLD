@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily RAGE:MP server backup
+Requires=ragemp-backup.service
+
+[Timer]
+OnCalendar=*-*-* 04:20:00
+RandomizedDelaySec=15m
+Persistent=true
+
+[Install]
+WantedBy=timers.target

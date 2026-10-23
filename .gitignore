@@ -1,0 +1,30 @@
+# Secrets and local overrides
+.env
+.env.*
+!.env.example
+
+# Runtime data of the server (bind-mounted into the container).
+# Game mode sources stay tracked; binaries, logs and generated config do not.
+/server-data/ragemp-server
+/server-data/bin/
+/server-data/dotnet/
+/server-data/logs/
+/server-data/conf.json
+/server-data/.server-version
+/server-data/.conf.json.tmp
+/server-data/fastdl/
+/server-data/cache/
+/server-data/crashdumps/
+/server-data/*.log
+
+# Backups and local artefacts
+/backups/
+*.tar.gz
+!server-data/**/*.tar.gz
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

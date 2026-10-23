@@ -1,0 +1,15 @@
+{
+    "announce": false,
+    "bind": "0.0.0.0",
+    "csharp": "disabled",
+    "enable-http-security": false,
+    "enable-nodejs": true,
+    "gamemode": "freeroam",
+    "language": "us",
+    "maxplayers": 100,
+    "name": "RAGE:MP server",
+    "port": 22005,
+    "stream-distance": 500.0,
+    "sync-rate": 40,
+    "url": ""
+}

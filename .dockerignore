@@ -1,0 +1,14 @@
+# Keep the build context small: binaries and runtime state come from the CDN
+# and from ./server-data at runtime, never from the repository.
+.git
+.gitignore
+.env
+.env.*
+backups
+docs
+extras
+server-data
+*.md
+!README.md
+.dockerignore
+Makefile
