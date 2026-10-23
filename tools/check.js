@@ -388,7 +388,14 @@ function validateConf(report) {
     if (!conf.bind) report.error('conf.json: нет bind');
     if (conf.announce === true) report.warn('conf.json: announce=true — локальный тестовый сервер попадёт в мастер-лист (для dev оставьте false)');
     if (conf.bind && conf.bind !== '127.0.0.1' && !conf.localTest) report.warn('conf.json: bind не 127.0.0.1 — сервер будет доступен из сети');
-    if (!conf.gamemode) report.warn('conf.json: не задан gamemode');
+    if (!conf.gamemode) {
+      report.error("conf.json: не задан gamemode (RAGE грузит packages/<gamemode>/index.js)");
+    } else {
+      const pkg = path.join(ROOT, 'packages', String(conf.gamemode), 'index.js');
+      if (!fs.existsSync(pkg)) {
+        report.error(`conf.json: gamemode "${conf.gamemode}", но packages/${conf.gamemode}/index.js не найден`);
+      }
+    }
     if (Number(conf.port) < 1024) report.warn('conf.json: порт < 1024 может требовать прав администратора');
     report.pass(`conf.json: порт ${conf.port}, bind ${conf.bind}, announce ${conf.announce}`);
     const prod = path.join(ROOT, 'conf.production.example.json');

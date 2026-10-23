@@ -1,6 +1,6 @@
 {
   "name": "GOLD DAYZ [RU] [DayZ] [PVP]",
-  "gamemode": "DayZ",
+  "gamemode": "gold",
   "maxplayers": 100,
   "port": 22005,
   "bind": "0.0.0.0",
