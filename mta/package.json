@@ -6,11 +6,13 @@
   "scripts": {
     "check": "node tools/luacheck.js",
     "sim": "node tools/simulate.js",
-    "verify": "npm run check && npm run sim"
+    "ui": "node tools/ui-smoke.js",
+    "verify": "npm run check && npm run sim && npm run ui"
   },
   "devDependencies": {
     "fengari": "^0.1.5",
-    "luaparse": "^0.3.1"
+    "luaparse": "^0.3.1",
+    "jsdom": "^24.1.0"
   },
   "engines": {
     "node": ">=18"

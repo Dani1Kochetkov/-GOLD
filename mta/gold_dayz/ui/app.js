@@ -53,8 +53,15 @@
 
   function money(value) { return "$" + fmt(value); }
 
+  /* В браузере демо-режим подменяет сервер: send() всё равно формирует пакет,
+     поэтому видно, что именно уйдёт в игру, и следом отвечает локальный макет. */
+  var demoHandler = null;
+
   function send(payload) {
     try { mta.triggerEvent("dz:ui", JSON.stringify(payload)); } catch (e) { /* вне MTA */ }
+    if (demoHandler) {
+      try { demoHandler(payload); } catch (e) { if (window.console) console.error("[GOLD UI демо]", e); }
+    }
   }
 
   function closePanel() {
@@ -971,6 +978,45 @@
 
     handlePush({ t: "welcome", d: { version: "1.0.0", items: ITEMS } });
 
+    function charData() {
+      return { name: "Кочующий", spawns: spawns(), skins: [7, 12, 14, 20, 29, 31], savedSkin: 29 };
+    }
+
+    function describeAction(payload) {
+      if (payload.a === "inv") return "инвентарь: " + payload.op;
+      if (payload.a === "trade") return "торговля: " + payload.op;
+      if (payload.a === "corpse") return "труп: " + payload.op;
+      if (payload.a === "base") return "база: " + payload.op;
+      if (payload.a === "craft") return "крафт";
+      return String(payload.a || "?");
+    }
+
+    demoHandler = function (payload) {
+      if (payload.a === "login") {
+        window.setTimeout(function () {
+          if (/^fail/i.test(String(payload.user || ""))) {
+            handlePush({ t: "loginError", d: { text: "Демо: неверный позывной или пароль." } });
+            return;
+          }
+          handlePush({ t: "loginOk" });
+          window.setTimeout(function () { handlePush({ t: "char", d: charData() }); }, 400);
+        }, 400);
+        return;
+      }
+      if (payload.a === "spawn") {
+        handlePush({ t: "spawned" });
+        toast("Демо: спавн «" + (spawnName(payload.spawn) || payload.spawn) + "». В игре здесь загружается мир.", "ok");
+        return;
+      }
+      if (payload.a === "respawn") {
+        handlePush({ t: "char", d: charData() });
+        toast("Демо: возрождение — в игре экран выбора точки", "ok");
+        return;
+      }
+      if (payload.a === "close") { hidePanel(); return; }
+      toast("Демо: «" + describeAction(payload) + "» уйдёт на сервер", "info");
+    };
+
     var bar = document.createElement("div");
     bar.className = "demo-bar";
     bar.innerHTML = '<span class="demo-label">ДЕМО UI</span>' +
@@ -992,11 +1038,17 @@
       ];
     }
 
+    function spawnName(id) {
+      var found = null;
+      spawns().forEach(function (s) { if (s.id === id) found = s.name; });
+      return found;
+    }
+
     function demoScene(name) {
       if (name === "login") {
         openLogin({ name: "", version: "1.0.0", allowRegister: true, minPassword: 4 });
       } else if (name === "char") {
-        openChar({ name: "Кочующий", spawns: spawns(), skins: [7, 12, 14, 20, 29, 31], savedSkin: 29 });
+        openChar(charData());
       } else if (name === "death") {
         openDeath({ cause: "Растерзан зомби", survived: 1840, kills: 7, zk: 23, deaths: 4, respawnDelay: 8, respawns: spawns() });
       } else if (name === "inventory") {
