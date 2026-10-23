@@ -1,5 +1,5 @@
 {
-  "builtAt": "2026-10-23T09:22:06.117Z",
+  "builtAt": "2026-10-23T09:25:42.825Z",
   "entry": "client/index.js",
   "out": "client_packages/gold/goldclient.js",
   "modules": [
@@ -13,7 +13,7 @@
     "shared/vec3.js",
     "shared/constants.js"
   ],
-  "bytes": 48018,
+  "bytes": 48326,
   "uiFiles": [
     "index.html",
     "style.css",

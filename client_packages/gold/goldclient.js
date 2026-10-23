@@ -1071,6 +1071,12 @@ class World {
     if (pos) this.teleport(pos);
     try {
       const local = mp.players.local;
+      // Снимаем ragdoll с экрана смерти, иначе пед останется лежать.
+      try {
+        mp.game.ped.clearPedToRagdoll(local.handle, 0, 0, 0);
+      } catch (err) {
+        // натив может отсутствовать в старых сборках
+      }
       mp.game.ped.clearPedBloodDamage(local.handle);
       local.setArmour(0);
       mp.game.player.resetPlayerStamina();

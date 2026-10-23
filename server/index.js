@@ -51,6 +51,24 @@ const net = {
   send(playerId, eventName, payload) {
     const player = mpPlayers.get(playerId);
     if (!player) return;
+    // Возрождение: если движок успел убить педа (падение, ДТП), его нужно поднять.
+    if (eventName === EVENTS.RESPAWN) {
+      const data = safeJsonParse(payload, 512);
+      if (data && data.pos) {
+        try {
+          player.spawn(data.pos.x, data.pos.y, data.pos.z, 0);
+          player.heading = Number(data.heading) || player.heading;
+        } catch (err) {
+          logger.warn(`[spawn] ${player.name}: ${err.message}`);
+        }
+      }
+      const engine = engineState.get(playerId);
+      if (engine) {
+        engine.alive = true;
+        // После spawn движок сбрасывает оружие — выдадим его заново.
+        engine.weaponKey = '';
+      }
+    }
     try {
       if (payload === undefined) player.call(eventName);
       else player.call(eventName, [payload]);
@@ -156,10 +174,14 @@ function onClient(eventName, handler) {
   });
 }
 
-onClient('gold:ready', (playerId) => {
-  const player = mpPlayers.get(playerId);
-  if (!player) return;
-  ensureGamePlayer(player);
+// Клиент может сообщить о готовности раньше, чем сервер создал игровое состояние.
+mp.events.add('gold:ready', (player) => {
+  try {
+    if (!player) return;
+    ensureGamePlayer(player);
+  } catch (err) {
+    logger.error(`[event gold:ready] ${err.stack || err.message}`);
+  }
 });
 
 onClient('gold:shot', (playerId, payload) => game.handleShot(playerId, payload));

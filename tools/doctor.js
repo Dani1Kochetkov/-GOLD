@@ -104,16 +104,20 @@ async function main() {
   line(report.errors.length === 0, `проверка проекта: ${report.errors.length} ошибок, ${report.warnings.length} предупреждений`);
   report.errors.slice(0, 8).forEach((error) => console.log(`      ❌ ${error}`));
 
-  console.log('\n  Что дальше:');
+  const steps = [];
   if (binary === null) {
-    console.log('   1. Скачайте server-files (Windows/Linux) с rage.mp и распакуйте в корень проекта.');
-    console.log('   2. Запустите: Windows — ragemp-server.exe | Linux — ./ragemp-server');
+    steps.push('Скачайте server-files (Windows/Linux) с rage.mp и распакуйте в корень проекта.');
+    steps.push('Запустите: Windows — ragemp-server.exe | Linux — ./ragemp-server');
   } else {
-    console.log(`   1. Запустите сервер: ${binary}`);
+    steps.push(`Запустите сервер: ${binary}`);
   }
-  console.log('   2. В клиенте RAGE: Direct Connect → 127.0.0.1:22005');
-  console.log('   3. Проверьте в игре: F1 (телеметрия синхронизации), /zcount, /metrics.');
-  console.log('   4. Перед выкладкой на VDS: docs/DEPLOY-VDS.md\n');
+  steps.push('В клиенте RAGE: Direct Connect → 127.0.0.1:22005');
+  steps.push('Проверьте в игре: F1 (телеметрия синхронизации), /zcount, /metrics.');
+  steps.push('Перед выкладкой на VDS: docs/DEPLOY-VDS.md');
+
+  console.log('\n  Что дальше:');
+  steps.forEach((text, index) => console.log(`   ${index + 1}. ${text}`));
+  console.log('');
 
   process.exit(missing || report.errors.length ? 1 : 0);
 }
