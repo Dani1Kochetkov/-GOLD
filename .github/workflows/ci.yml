@@ -38,6 +38,17 @@ jobs:
         run: npm run doctor
         continue-on-error: true
 
+      - name: Ready build (zip with prebuilt client bundle)
+        run: npm run package
+
+      - name: Upload ready build
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gold-dayz-build
+          path: release/*.zip
+          if-no-files-found: warn
+
       - name: Upload simulation report
         if: always()
         uses: actions/upload-artifact@v4

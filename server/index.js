@@ -14,7 +14,7 @@ const { Logger } = require('./core/logger');
 const { ProfileStore } = require('./core/store');
 const { Game, EVENTS } = require('./game');
 const commands = require('./commands');
-const { isAdmin } = require('./core/permissions');
+const { isAdmin, isWhitelisted } = require('./core/permissions');
 const { safeJsonParse } = require('../shared/netcode');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -138,11 +138,21 @@ function ensureGamePlayer(player) {
 }
 
 mp.events.add('playerJoin', (player) => {
+  if (!isWhitelisted(player, game.config)) {
+    logger.info(`[access] ${player.name} (${player.ip}) отклонён: нет в вайтлисте`);
+    try {
+      player.kick(String(game.config.access.kickMessage || 'Сервер закрыт для теста.'));
+    } catch (err) {
+      logger.warn(`[access] не удалось кикнуть ${player.name}: ${err.message}`);
+    }
+    return;
+  }
   bindPlayer(player);
   logger.info(`[join] ${player.name} (${player.ip})`);
 });
 
 mp.events.add('playerReady', (player) => {
+  if (!isWhitelisted(player, game.config)) return;
   ensureGamePlayer(player);
 });
 

@@ -10,7 +10,9 @@
     "sim": "node tools/sim.js --players 6 --seconds 60",
     "sim:long": "node tools/sim.js --players 12 --seconds 300 --report reports/sim-long.json",
     "doctor": "node tools/doctor.js",
-    "verify": "npm run build && npm run check && npm run test && node tools/sim.js --players 6 --seconds 45"
+    "verify": "npm run build && npm run check && npm run test && node tools/sim.js --players 6 --seconds 45",
+    "package": "node tools/package.js",
+    "release": "npm run verify && node tools/package.js"
   },
   "engines": {
     "node": ">=18"

@@ -38,9 +38,10 @@
 На домашнем ПК:
 
 ```bash
-npm run verify          # финальная проверка
-npm run build           # бандл клиента актуален
+npm run release         # verify + готовый release/gold-dayz-<версия>.zip
 ```
+
+Архив уже содержит собранный клиентский бандл и CEF-UI — на VDS Node.js нужен только если хотите пересобирать (`npm run build`) или гонять проверки (`npm run check`, `npm test`).
 
 На VDS положите в `/home/gold/dayz/`:
 
@@ -52,6 +53,8 @@ client_packages/index.js
 client_packages/gold/…  # из сборки
 server/  shared/  client/  data/  tools/  tests/  docs/  package.json
 ```
+
+Распаковать: `unzip gold-dayz-<версия>.zip` и скопировать содержимое `gold-dayz-<версия>/` в папку с server-files.
 
 Каталог `server/`, `shared/`, `data/` обязателен: `packages/gold/index.js` подключает `../../server/index.js`, иначе gamemode не загрузится. `client/`, `tools/`, `tests/`, `docs/` на проде не нужны, но и не мешают (client/ не грузится RAGE, он только источник для сборки).
 
@@ -245,6 +248,7 @@ npm run build && sudo systemctl start gold-dayz
 ## 9. Безопасность перед публичным открытием
 
 - [ ] `admin.commandsFromLocalhostOnly: true` **и** список `admin.names` для доверенных лиц.
+- [ ] Решено, нужен ли вайтлист (`access.whitelistEnabled`): пароля на входе у RAGE нет, вход по нику.
 - [ ] Ники админов не совпадают с никами игроков (проверка по имени — слабое место; для серьёзного продакшена добавьте ACL по RAGE-ID/IP).
 - [ ] `allow-cef-debugging: false`.
 - [ ] `announce: true` только когда готовы к игрокам.

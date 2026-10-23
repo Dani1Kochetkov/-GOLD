@@ -405,6 +405,45 @@ function validateConf(report) {
   }
 }
 
+/** Вайтлист: включён, но пуст — сервер окажется закрытым для всех. */
+function validateAccess(report) {
+  const file = path.join(ROOT, 'data', 'gold.config.json');
+  if (!fs.existsSync(file)) return;
+  let config;
+  try {
+    config = JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch (err) {
+    return; // ошибку уже поймал validateData
+  }
+  const access = config.access;
+  if (!access) {
+    report.warn('gold.config.json: нет блока access (вайтлист отключён по умолчанию)');
+    return;
+  }
+  const lists = ['nicknames', 'socialClubIds', 'ips'];
+  const bad = lists.filter((key) => access[key] !== undefined && !Array.isArray(access[key]));
+  if (bad.length) {
+    report.error(`access: поля ${bad.join(', ')} должны быть массивами`);
+    return;
+  }
+  const total = lists.reduce((sum, key) => sum + (Array.isArray(access[key]) ? access[key].length : 0), 0);
+  if (access.whitelistEnabled === true && total === 0) {
+    report.error('access: whitelistEnabled=true, но списки пусты — на сервер никто не зайдёт');
+    return;
+  }
+  if (access.whitelistEnabled === true) {
+    report.pass(`вайтлист включён: ${total} допущенных (ники/SC-ID/IP)`);
+  } else {
+    report.pass('вайтлист выключен: вход без логина и пароля');
+  }
+
+  const admin = config.admin || {};
+  if (admin.enabled !== false && admin.commandsFromLocalhostOnly !== true
+    && (!Array.isArray(admin.names) || admin.names.length === 0)) {
+    report.warn('admin: админка открыта всем (commandsFromLocalhostOnly=false и пустой admin.names)');
+  }
+}
+
 function validateCommands(report) {
   const file = path.join(ROOT, 'server', 'commands.js');
   if (!fs.existsSync(file)) return;
@@ -450,6 +489,7 @@ function runChecks() {
   validateUI(report);
   validatePayloads(report, data);
   validateCommands(report);
+  validateAccess(report);
   validateGames(report, data);
   return report;
 }
@@ -477,4 +517,4 @@ if (require.main === module) {
   process.exit(report.errors.length ? 1 : 0);
 }
 
-module.exports = { runChecks, validateData, validateSchemas, validateUI, validatePayloads, MAX_PAYLOAD };
+module.exports = { runChecks, validateData, validateSchemas, validateUI, validateAccess, validatePayloads, MAX_PAYLOAD };
