@@ -1,0 +1,417 @@
+{
+  "$schema": "./schemas/map.schema.json",
+  "meta": {
+    "version": 1,
+    "description": "Карта GOLD DAYZ: точки спавна, лут-зоны, зоны зомби, безопасные зоны. Координаты — стартовые ориентиры GTA V, их удобно править в игре командой /zone.",
+    "world": {
+      "time": 10,
+      "weather": "OVERCAST",
+      "zombieGlobalCap": 120,
+      "nightZombieMultiplier": 1.5
+    }
+  },
+  "spawnPoints": [
+    {
+      "id": "sp_paleto_dock",
+      "name": "Палето-Бей, причал",
+      "pos": {
+        "x": -275.0,
+        "y": 6635.0,
+        "z": 32.0
+      }
+    },
+    {
+      "id": "sp_grapeseed",
+      "name": "Грейпсид, ферма",
+      "pos": {
+        "x": 1700.0,
+        "y": 4880.0,
+        "z": 42.0
+      }
+    },
+    {
+      "id": "sp_chumash",
+      "name": "Чумаш, побережье",
+      "pos": {
+        "x": -3100.0,
+        "y": 1100.0,
+        "z": 20.0
+      }
+    },
+    {
+      "id": "sp_sandy",
+      "name": "Сэнди-Шорс, окраина",
+      "pos": {
+        "x": 1960.0,
+        "y": 3740.0,
+        "z": 32.0
+      }
+    },
+    {
+      "id": "sp_harmony",
+      "name": "Хармони, трасса",
+      "pos": {
+        "x": 550.0,
+        "y": 2670.0,
+        "z": 43.0
+      }
+    },
+    {
+      "id": "sp_alamo",
+      "name": "Аламо-Си, берег",
+      "pos": {
+        "x": 1300.0,
+        "y": 4200.0,
+        "z": 30.0
+      }
+    }
+  ],
+  "lootZones": [
+    {
+      "id": "lz_paleto_hospital",
+      "name": "Палето-Бей — больница",
+      "pos": {
+        "x": -250.0,
+        "y": 6340.0,
+        "z": 32.0
+      },
+      "radius": 35.0,
+      "tier": 1,
+      "lootTable": "medical",
+      "count": 10
+    },
+    {
+      "id": "lz_paleto_store",
+      "name": "Палето-Бей — магазин",
+      "pos": {
+        "x": -300.0,
+        "y": 6500.0,
+        "z": 32.0
+      },
+      "radius": 30.0,
+      "tier": 1,
+      "lootTable": "food",
+      "count": 8
+    },
+    {
+      "id": "lz_paleto_pd",
+      "name": "Палето-Бей — полиция",
+      "pos": {
+        "x": -330.0,
+        "y": 6270.0,
+        "z": 32.0
+      },
+      "radius": 25.0,
+      "tier": 2,
+      "lootTable": "police",
+      "count": 7
+    },
+    {
+      "id": "lz_paleto_homes",
+      "name": "Палето-Бей — жилые дома",
+      "pos": {
+        "x": -180.0,
+        "y": 6580.0,
+        "z": 32.0
+      },
+      "radius": 45.0,
+      "tier": 1,
+      "lootTable": "civilian",
+      "count": 12
+    },
+    {
+      "id": "lz_grapeseed_farm",
+      "name": "Грейпсид — ферма",
+      "pos": {
+        "x": 1700.0,
+        "y": 4880.0,
+        "z": 42.0
+      },
+      "radius": 50.0,
+      "tier": 1,
+      "lootTable": "civilian",
+      "count": 12
+    },
+    {
+      "id": "lz_grapeseed_barn",
+      "name": "Грейпсид — амбар",
+      "pos": {
+        "x": 1780.0,
+        "y": 4780.0,
+        "z": 40.0
+      },
+      "radius": 25.0,
+      "tier": 1,
+      "lootTable": "industrial",
+      "count": 7
+    },
+    {
+      "id": "lz_sandy_airfield",
+      "name": "Сэнди-Шорс — аэродром",
+      "pos": {
+        "x": 1740.0,
+        "y": 3280.0,
+        "z": 41.0
+      },
+      "radius": 70.0,
+      "tier": 2,
+      "lootTable": "civilian",
+      "count": 14
+    },
+    {
+      "id": "lz_sandy_garage",
+      "name": "Сэнди-Шорс — мастерская",
+      "pos": {
+        "x": 1980.0,
+        "y": 3760.0,
+        "z": 32.0
+      },
+      "radius": 25.0,
+      "tier": 2,
+      "lootTable": "industrial",
+      "count": 8
+    },
+    {
+      "id": "lz_harmony_diner",
+      "name": "Хармони — закусочная",
+      "pos": {
+        "x": 550.0,
+        "y": 2670.0,
+        "z": 43.0
+      },
+      "radius": 30.0,
+      "tier": 1,
+      "lootTable": "food",
+      "count": 8
+    },
+    {
+      "id": "lz_zancudo_checkpoint",
+      "name": "Занкудо — КПП",
+      "pos": {
+        "x": -2200.0,
+        "y": 3200.0,
+        "z": 32.0
+      },
+      "radius": 45.0,
+      "tier": 3,
+      "lootTable": "military",
+      "count": 12
+    },
+    {
+      "id": "lz_zancudo_hangar",
+      "name": "Занкудо — ангар",
+      "pos": {
+        "x": -2350.0,
+        "y": 3250.0,
+        "z": 32.0
+      },
+      "radius": 40.0,
+      "tier": 3,
+      "lootTable": "military",
+      "count": 10
+    },
+    {
+      "id": "lz_chumash_store",
+      "name": "Чумаш — магазин у шоссе",
+      "pos": {
+        "x": -3100.0,
+        "y": 1100.0,
+        "z": 20.0
+      },
+      "radius": 30.0,
+      "tier": 1,
+      "lootTable": "food",
+      "count": 8
+    },
+    {
+      "id": "lz_alamo_camp",
+      "name": "Аламо-Си — лагерь",
+      "pos": {
+        "x": 1300.0,
+        "y": 4200.0,
+        "z": 30.0
+      },
+      "radius": 40.0,
+      "tier": 1,
+      "lootTable": "civilian",
+      "count": 10
+    },
+    {
+      "id": "lz_lsia_cargo",
+      "name": "LSIA — грузовой терминал",
+      "pos": {
+        "x": -1050.0,
+        "y": -2750.0,
+        "z": 13.0
+      },
+      "radius": 60.0,
+      "tier": 3,
+      "lootTable": "military",
+      "count": 14
+    },
+    {
+      "id": "lz_vespucci",
+      "name": "Веспуччи — набережная",
+      "pos": {
+        "x": -1250.0,
+        "y": -1450.0,
+        "z": 4.0
+      },
+      "radius": 55.0,
+      "tier": 2,
+      "lootTable": "civilian",
+      "count": 12
+    },
+    {
+      "id": "lz_delperro_pier",
+      "name": "Дель-Перро — пирс",
+      "pos": {
+        "x": -1850.0,
+        "y": -1240.0,
+        "z": 8.0
+      },
+      "radius": 45.0,
+      "tier": 2,
+      "lootTable": "civilian",
+      "count": 10
+    }
+  ],
+  "zombieZones": [
+    {
+      "id": "zz_paleto",
+      "name": "Палето-Бей",
+      "pos": {
+        "x": -275.0,
+        "y": 6450.0,
+        "z": 32.0
+      },
+      "radius": 190.0,
+      "max": 20,
+      "respawn": 26000
+    },
+    {
+      "id": "zz_grapeseed",
+      "name": "Грейпсид",
+      "pos": {
+        "x": 1740.0,
+        "y": 4830.0,
+        "z": 41.0
+      },
+      "radius": 170.0,
+      "max": 14,
+      "respawn": 28000
+    },
+    {
+      "id": "zz_sandy",
+      "name": "Сэнди-Шорс",
+      "pos": {
+        "x": 1900.0,
+        "y": 3600.0,
+        "z": 33.0
+      },
+      "radius": 200.0,
+      "max": 18,
+      "respawn": 26000
+    },
+    {
+      "id": "zz_zancudo",
+      "name": "Занкудо",
+      "pos": {
+        "x": -2250.0,
+        "y": 3220.0,
+        "z": 32.0
+      },
+      "radius": 230.0,
+      "max": 20,
+      "respawn": 24000
+    },
+    {
+      "id": "zz_lsia",
+      "name": "LSIA",
+      "pos": {
+        "x": -1050.0,
+        "y": -2750.0,
+        "z": 13.0
+      },
+      "radius": 180.0,
+      "max": 16,
+      "respawn": 26000
+    },
+    {
+      "id": "zz_vespucci",
+      "name": "Веспуччи",
+      "pos": {
+        "x": -1300.0,
+        "y": -1400.0,
+        "z": 5.0
+      },
+      "radius": 200.0,
+      "max": 18,
+      "respawn": 25000
+    },
+    {
+      "id": "zz_harmony",
+      "name": "Хармони",
+      "pos": {
+        "x": 550.0,
+        "y": 2670.0,
+        "z": 43.0
+      },
+      "radius": 130.0,
+      "max": 8,
+      "respawn": 30000
+    },
+    {
+      "id": "zz_chumash",
+      "name": "Чумаш",
+      "pos": {
+        "x": -3050.0,
+        "y": 1050.0,
+        "z": 20.0
+      },
+      "radius": 140.0,
+      "max": 6,
+      "respawn": 30000
+    }
+  ],
+  "safeZones": [
+    {
+      "id": "sz_paleto_hub",
+      "name": "Лагерь выживших (Палето-Бей)",
+      "pos": {
+        "x": -240.0,
+        "y": 6610.0,
+        "z": 32.0
+      },
+      "radius": 40.0,
+      "pvp": false,
+      "noZombies": true
+    },
+    {
+      "id": "sz_grapeseed_hub",
+      "name": "Лагерь выживших (Грейпсид)",
+      "pos": {
+        "x": 1680.0,
+        "y": 4840.0,
+        "z": 42.0
+      },
+      "radius": 30.0,
+      "pvp": false,
+      "noZombies": true
+    }
+  ],
+  "toxinZones": [
+    {
+      "id": "tz_lsia_depot",
+      "name": "LSIA — склад с токсинами",
+      "pos": {
+        "x": -1120.0,
+        "y": -2810.0,
+        "z": 13.0
+      },
+      "radius": 35.0,
+      "damagePerSecond": 6,
+      "requiredItem": "gas_mask"
+    }
+  ]
+}

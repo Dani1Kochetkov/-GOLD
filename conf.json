@@ -1,0 +1,20 @@
+{
+  "name": "GOLD DAYZ [RU] [DayZ] [DEV]",
+  "gamemode": "gold",
+  "maxplayers": 32,
+  "port": 22005,
+  "bind": "127.0.0.1",
+  "announce": false,
+  "stream-distance": 300.0,
+  "sync-rate": 40,
+  "language": "ru",
+  "url": "",
+  "csharp": "disabled",
+  "enable-nodejs": true,
+  "allow-cef-debugging": true,
+  "voice-chat": true,
+  "voice-chat-sample-rate": 24000,
+  "resources-compression-level": 0,
+  "disallow-multiple-connections-per-ip": false,
+  "limit-time-of-connections-per-ip": 0
+}

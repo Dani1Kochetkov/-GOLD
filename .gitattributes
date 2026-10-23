@@ -1,0 +1,8 @@
+# Windows-скрипты должны иметь CRLF, иначе cmd.exe иногда спотыкается на метках.
+*.cmd text eol=crlf
+*.bat text eol=crlf
+# Linux-скрипты — LF, иначе «bad interpreter».
+*.sh  text eol=lf
+# Готовые архивы не трогаем.
+*.zip binary
+*.tar.gz binary

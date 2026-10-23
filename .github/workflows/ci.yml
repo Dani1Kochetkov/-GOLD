@@ -1,0 +1,58 @@
+name: GOLD DAYZ CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    name: Build · Check · Test · Simulate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # У проекта нет npm-зависимостей: установка не требуется.
+      - name: Build client bundle
+        run: npm run build
+
+      - name: Project checks (data, syntax, payload budgets)
+        run: npm run check
+
+      - name: Unit & integration tests
+        run: npm test
+
+      - name: Headless world simulation
+        run: node tools/sim.js --players 8 --seconds 60 --seed 42 --report reports/sim.json
+
+      - name: Doctor (environment report)
+        run: npm run doctor
+        continue-on-error: true
+
+      - name: Ready build (zip with prebuilt client bundle)
+        run: npm run package
+
+      - name: Upload ready build
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gold-dayz-build
+          path: release/*.zip
+          if-no-files-found: warn
+
+      - name: Upload simulation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sim-report
+          path: reports/sim.json
+          if-no-files-found: ignore

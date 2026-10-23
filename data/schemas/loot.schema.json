@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "gold/loot.schema.json",
+  "title": "GOLD DAYZ — loot.json",
+  "type": "object",
+  "required": ["meta", "tables"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "meta": { "type": "object", "required": ["version"], "properties": { "version": { "type": "integer" } } },
+    "tables": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "object",
+          "required": ["item", "weight"],
+          "properties": {
+            "item": { "type": "string" },
+            "weight": { "type": "number", "exclusiveMinimum": 0 },
+            "min": { "type": "integer", "minimum": 1 },
+            "max": { "type": "integer", "minimum": 1 },
+            "chance": { "type": "number", "minimum": 0, "maximum": 1 }
+          }
+        }
+      }
+    }
+  }
+}

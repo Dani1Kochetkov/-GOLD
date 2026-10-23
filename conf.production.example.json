@@ -1,0 +1,23 @@
+{
+  "name": "GOLD DAYZ [RU] [DayZ] [PVP]",
+  "gamemode": "gold",
+  "maxplayers": 100,
+  "port": 22005,
+  "bind": "0.0.0.0",
+  "announce": true,
+  "stream-distance": 400.0,
+  "sync-rate": 40,
+  "language": "ru",
+  "url": "https://example.com",
+  "csharp": "disabled",
+  "enable-nodejs": true,
+  "allow-cef-debugging": false,
+  "voice-chat": true,
+  "voice-chat-sample-rate": 24000,
+  "resources-compression-level": 6,
+  "disallow-multiple-connections-per-ip": false,
+  "limit-time-of-connections-per-ip": 0,
+  "max-ping": 350,
+  "min-fps": 20,
+  "max-packet-loss": 20
+}

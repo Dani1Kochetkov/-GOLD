@@ -1,0 +1,30 @@
+# Зависимости инструментов (у самого RAGE-сервера зависимостей нет)
+node_modules/
+
+# Логи и сохранения персонажей (создаются в рантайме)
+logs/
+storage/
+reports/
+*.log
+
+# Рантайм RAGE Multiplayer кладётся пользователем локально
+runtime/
+server-files/
+ragemp-server
+ragemp-server.exe
+*.dll
+*.so
+
+# ОС / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Локальные секреты
+.env
+
+# Готовые сборки
+release/
+dist/
