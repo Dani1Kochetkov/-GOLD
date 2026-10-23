@@ -56,17 +56,23 @@ const START_TEXT = `GOLD DAYZ ${VERSION} — готовый дистрибути
    - Клиент RAGE Multiplayer + лицензионная GTA V (Steam/Epic/Rockstar).
 
 2. УСТАНОВКА
-   a) Распакуйте server-files RAGE в любую папку, например C:\\gold-dayz\\
+   Диск любой: D:\, E:\, папка с пробелами — start.cmd сам берёт свой путь.
+   a) Распакуйте server-files RAGE в любую папку на любом диске,
+      например D:\\gold-dayz\\ или D:\\GOLD\\
+      (лучше без кириллицы и пробелов в пути — так меньше сюрпризов у RAGE и Node)
    b) Скопируйте содержимое этой папки В ТУ ЖЕ папку (файлы не пересекаются).
    c) Ничего собирать не нужно: клиентский бандл уже собран.
 
    Должно получиться так:
-     C:\\gold-dayz\\ragemp-server.exe   <- из server-files
-     C:\\gold-dayz\\conf.json
-     C:\\gold-dayz\\packages\\gold\\index.js
-     C:\\gold-dayz\\client_packages\\index.js
-     C:\\gold-dayz\\client_packages\\gold\\goldclient.js
-     C:\\gold-dayz\\server\\  shared\\  data\\
+     D:\\gold-dayz\\ragemp-server.exe   <- из server-files
+     D:\\gold-dayz\\conf.json
+     D:\\gold-dayz\\packages\\gold\\index.js
+     D:\\gold-dayz\\client_packages\\index.js
+     D:\\gold-dayz\\client_packages\\gold\\goldclient.js
+     D:\\gold-dayz\\server\\  shared\\  data\\
+
+   Диск и имя папки любые: start.cmd берёт свой путь (%cd%) и работает с D:,
+   E: и с папкой вроде D:\\Games\\GOLD DAYZ. Ничего прописывать вручную не нужно.
 
 3. ЗАПУСК
    Windows: двойной клик по start.cmd (или ragemp-server.exe).

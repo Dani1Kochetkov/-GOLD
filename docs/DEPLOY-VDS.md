@@ -153,7 +153,7 @@ sudo ufw status verbose
 
 ## 4. Windows Server
 
-1. Распакуйте Windows server-files в `C:\gold-dayz\`, файлы проекта — туда же.
+1. Распакуйте Windows server-files в папку на нужном диске, например `D:\gold-dayz\`, файлы проекта — туда же.
 2. `npm run build` и `npm run check`.
 3. `conf.json` — из `conf.production.example.json`.
 4. Брандмауэр:
@@ -164,7 +164,7 @@ New-NetFirewallRule -DisplayName "GOLD DAYZ game UDP" -Direction Inbound -Protoc
 New-NetFirewallRule -DisplayName "GOLD DAYZ packages" -Direction Inbound -Protocol TCP -LocalPort 22006 -Action Allow
 ```
 
-5. Автозапуск — «Планировщик заданий» с триггером «При запуске системы», действие `C:\gold-dayz\ragemp-server.exe`, рабочая папка `C:\gold-dayz`.
+5. Автозапуск — «Планировщик заданий» с триггером «При запуске системы», действие `D:\gold-dayz\ragemp-server.exe`, рабочая папка `D:\gold-dayz`.
 6. Держите включённым `Отключить sleep` в схеме электропитания — иначе сервер уснёт.
 
 ---

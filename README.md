@@ -38,14 +38,16 @@ npm run package        # → release/gold-dayz-<версия>/ и release/gold-d
 2. Распаковать их в папку, например `C:\gold-dayz\`.
 3. Скопировать туда содержимое `release/gold-dayz-<версия>/` (файлы не пересекаются).
 4. Запустить `start.cmd` (Windows) или `./start.sh` (Linux) — либо `ragemp-server.exe` напрямую.
+   `start.cmd` сам переходит в свою папку (`cd /d "%~dp0"`), поэтому работает с любого диска: `D:\GOLD\`, `E:\games\gold dayz\` и т.д.
+   Если чего-то не хватает (не распакованы server-files, забыт `packages\`), он скажет, чего именно, и не будет запускаться вхолостую. Сообщения в `.cmd` латиницей — так они одинаково читаются при любой кодировке консоли; русская инструкция рядом в `START.txt`.
 5. В клиенте RAGE: **Direct Connect → `127.0.0.1:22005`**.
 
 ```text
-C:\gold-dayz\ragemp-server.exe      ← из server-files
-C:\gold-dayz\conf.json              ← из архива
-C:\gold-dayz\packages\gold\index.js
-C:\gold-dayz\client_packages\gold\goldclient.js
-C:\gold-dayz\server\  shared\  data\
+D:\gold-dayz\ragemp-server.exe      ← из server-files
+D:\gold-dayz\conf.json              ← из архива
+D:\gold-dayz\packages\gold\index.js
+D:\gold-dayz\client_packages\gold\goldclient.js
+D:\gold-dayz\server\  shared\  data\
 ```
 
 ### Нужен ли логин и пароль?
