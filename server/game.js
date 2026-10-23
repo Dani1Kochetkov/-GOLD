@@ -218,6 +218,8 @@ class Game {
       lastDeathAt: 0,
       lastDamageAt: 0,
       lastPositionAt: 0,
+      // После спавна/респавна движок отдаёт «старую» позицию 1–2 тика.
+      positionGraceUntil: 0,
       invulnerableUntil: 0,
       respawnAt: 0,
       safeZoneId: null,
@@ -263,6 +265,7 @@ class Game {
     }
 
     player.invulnerableUntil = now + (Number(this.config.spawn.invulnerableAfterSpawnMs) || 0);
+    player.positionGraceUntil = now + 3000;
     this.players.set(id, player);
 
     this.sendCatalog(player);
@@ -339,7 +342,8 @@ class Game {
       const next = V.copy(state.pos);
       if (!Number.isFinite(next.x) || !Number.isFinite(next.y) || !Number.isFinite(next.z)) return;
       // Анти-телепорт: за один тик больше 500 м — отбрасываем (кроме админ-телепорта).
-      if (now - player.lastPositionAt < 2000) {
+      const inGrace = now < (player.positionGraceUntil || 0);
+      if (!inGrace && now - player.lastPositionAt < 2000) {
         const moved = V.distance(player.pos, next);
         if (moved > 500 && !state.force) {
           this.log('warn', `[game] ${player.name}: подозрительный прыжок на ${Math.round(moved)} м, позиция отклонена`);
@@ -748,6 +752,8 @@ class Game {
     if (!player || player.alive) return false;
     player.pos = this.findSpawnPosition();
     player.heading = this.rng.float(0, 360);
+    // Даём движку пару тиков, чтобы позиция после spawn() догнала серверную.
+    player.positionGraceUntil = this.lastTickAt + 3000;
     player.stats = SURVIVAL_MOD.createStats();
     player.alive = true;
     player.respawnAt = 0;
