@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "gold/map.schema.json",
+  "title": "GOLD DAYZ — map.json",
+  "type": "object",
+  "required": ["meta", "spawnPoints", "lootZones", "zombieZones"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "meta": { "type": "object", "required": ["version"], "properties": { "version": { "type": "integer" } } },
+    "spawnPoints": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/point" } },
+    "lootZones": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/lootZone" } },
+    "zombieZones": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/zombieZone" } },
+    "safeZones": { "type": "array", "items": { "$ref": "#/definitions/safeZone" } },
+    "toxinZones": { "type": "array", "items": { "$ref": "#/definitions/toxinZone" } }
+  },
+  "definitions": {
+    "pos": {
+      "type": "object",
+      "required": ["x", "y", "z"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "z": { "type": "number" }
+      }
+    },
+    "point": {
+      "type": "object",
+      "required": ["id", "name", "pos"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "pos": { "$ref": "#/definitions/pos" }
+      }
+    },
+    "lootZone": {
+      "type": "object",
+      "required": ["id", "name", "pos", "radius", "lootTable", "count"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "pos": { "$ref": "#/definitions/pos" },
+        "radius": { "type": "number", "exclusiveMinimum": 0 },
+        "tier": { "type": "integer", "minimum": 1, "maximum": 3 },
+        "lootTable": { "type": "string" },
+        "count": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "zombieZone": {
+      "type": "object",
+      "required": ["id", "name", "pos", "radius", "max", "respawn"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "pos": { "$ref": "#/definitions/pos" },
+        "radius": { "type": "number", "exclusiveMinimum": 0 },
+        "max": { "type": "integer", "minimum": 1 },
+        "respawn": { "type": "integer", "minimum": 1000 }
+      }
+    },
+    "safeZone": {
+      "type": "object",
+      "required": ["id", "pos", "radius"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "pos": { "$ref": "#/definitions/pos" },
+        "radius": { "type": "number", "exclusiveMinimum": 0 },
+        "pvp": { "type": "boolean" },
+        "noZombies": { "type": "boolean" }
+      }
+    },
+    "toxinZone": {
+      "type": "object",
+      "required": ["id", "pos", "radius", "damagePerSecond"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "pos": { "$ref": "#/definitions/pos" },
+        "radius": { "type": "number", "exclusiveMinimum": 0 },
+        "damagePerSecond": { "type": "number", "minimum": 0 },
+        "requiredItem": { "type": "string" }
+      }
+    }
+  }
+}

@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GOLD DAYZ</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- ================= HUD ================= -->
+    <div id="hud" class="hud">
+      <div class="hud-vitals">
+        <div class="vital" data-key="health">
+          <span class="vital-icon">♥</span>
+          <div class="vital-bar"><i id="bar-health"></i></div>
+          <span class="vital-value" id="val-health">100</span>
+        </div>
+        <div class="vital" data-key="blood">
+          <span class="vital-icon">🩸</span>
+          <div class="vital-bar"><i id="bar-blood"></i></div>
+          <span class="vital-value" id="val-blood">100</span>
+        </div>
+        <div class="vital" data-key="hunger">
+          <span class="vital-icon">🍖</span>
+          <div class="vital-bar"><i id="bar-hunger"></i></div>
+          <span class="vital-value" id="val-hunger">100</span>
+        </div>
+        <div class="vital" data-key="thirst">
+          <span class="vital-icon">💧</span>
+          <div class="vital-bar"><i id="bar-thirst"></i></div>
+          <span class="vital-value" id="val-thirst">100</span>
+        </div>
+        <div class="vital" data-key="stamina">
+          <span class="vital-icon">⚡</span>
+          <div class="vital-bar"><i id="bar-stamina"></i></div>
+          <span class="vital-value" id="val-stamina">100</span>
+        </div>
+        <div class="status-row">
+          <span id="status-bleed" class="status danger hidden">КРОВОТЕЧЕНИЕ</span>
+          <span id="status-rad" class="status warn hidden">РАДИАЦИЯ</span>
+          <span id="status-safe" class="status safe hidden">БЕЗОПАСНАЯ ЗОНА</span>
+          <span id="status-night" class="status muted hidden">НОЧЬ</span>
+        </div>
+      </div>
+
+      <div class="hud-top">
+        <div class="clock"><span id="clock-hour">10:00</span><span class="clock-weather" id="clock-weather">OVERCAST</span></div>
+        <div class="scoreboard">
+          <div><b id="stat-zombies">0</b><span>зомби</span></div>
+          <div><b id="stat-players">0</b><span>игроки</span></div>
+          <div><b id="stat-score">0</b><span>счёт</span></div>
+        </div>
+      </div>
+
+      <div class="hud-weapon" id="weapon-card">
+        <div class="weapon-name" id="weapon-name">Без оружия</div>
+        <div class="weapon-ammo"><span id="weapon-ammo">—</span><small id="weapon-mag"></small></div>
+      </div>
+
+      <div class="hud-weight">
+        <span>ВЕС</span>
+        <div class="weight-bar"><i id="bar-weight"></i></div>
+        <b id="weight-text">0 / 30 кг</b>
+      </div>
+
+      <div class="hud-hints">
+        <span><kbd>I</kbd> инвентарь</span>
+        <span><kbd>M</kbd> карта</span>
+        <span><kbd>E</kbd> подобрать</span>
+        <span><kbd>R</kbd> перезарядка</span>
+        <span><kbd>F1</kbd> синхронизация</span>
+      </div>
+
+      <div class="crosshair" id="crosshair"><i></i></div>
+      <div class="hitmarker hidden" id="hitmarker">✕</div>
+      <div class="vignette" id="vignette"></div>
+      <div class="nearby-zombies" id="nearby-zombies"></div>
+    </div>
+
+    <!-- ================= TOASTS ================= -->
+    <div id="toasts" class="toasts"></div>
+
+    <!-- ================= INVENTORY ================= -->
+    <section id="inventory" class="panel hidden" aria-label="Инвентарь">
+      <div class="panel-inner">
+        <header class="panel-header">
+          <div>
+            <h1>ИНВЕНТАРЬ</h1>
+            <p id="inv-subtitle">Выживший</p>
+          </div>
+          <div class="inv-weight">
+            <div class="weight-bar big"><i id="inv-weight-bar"></i></div>
+            <span id="inv-weight-text">0 / 30 кг</span>
+            <span id="inv-slots-text">0 / 18 слотов</span>
+          </div>
+          <button class="close-btn" data-action="close">✕</button>
+        </header>
+        <div class="inv-body">
+          <aside class="equipment">
+            <h2>ЭКИПИРОВКА</h2>
+            <div id="equipment-slots" class="equipment-list"></div>
+            <div class="inv-totals" id="inv-totals"></div>
+          </aside>
+          <div class="bag">
+            <h2>РЮКЗАК</h2>
+            <div id="inv-grid" class="inv-grid"></div>
+          </div>
+          <aside class="details" id="details">
+            <h2>ПРЕДМЕТ</h2>
+            <div id="details-body" class="details-body empty">Выберите предмет</div>
+            <div id="details-actions" class="details-actions"></div>
+          </aside>
+        </div>
+        <footer class="panel-footer">
+          <span>ЛКМ — выбрать · перетаскивание — переместить · двойной клик — использовать/экипировать</span>
+          <button class="ghost-btn" data-action="pickup">Подобрать рядом (E)</button>
+        </footer>
+      </div>
+    </section>
+
+    <!-- ================= MAP ================= -->
+    <section id="map" class="panel hidden" aria-label="Карта">
+      <div class="panel-inner map-inner">
+        <header class="panel-header">
+          <div>
+            <h1>КАРТА ЛУТ-ЗОН</h1>
+            <p>Клик по карте — поставить метку. ЛКМ по зоне — телепорт-метка для админа.</p>
+          </div>
+          <button class="close-btn" data-action="close">✕</button>
+        </header>
+        <div class="map-body">
+          <canvas id="map-canvas" width="980" height="620"></canvas>
+          <aside class="map-legend">
+            <h2>ЛЕГЕНДА</h2>
+            <div class="legend-row"><i class="dot tier1"></i> 1 ур. — гражданский лут</div>
+            <div class="legend-row"><i class="dot tier2"></i> 2 ур. — полиция / промзона</div>
+            <div class="legend-row"><i class="dot tier3"></i> 3 ур. — военный лут</div>
+            <div class="legend-row"><i class="dot zombie"></i> зоны зомби</div>
+            <div class="legend-row"><i class="dot safe"></i> безопасные зоны</div>
+            <div class="legend-row"><i class="dot toxin"></i> токсичные зоны</div>
+            <div class="legend-row"><i class="dot player"></i> вы</div>
+            <hr />
+            <div id="map-hint" class="map-hint">Наведите на зону, чтобы увидеть имя</div>
+            <button class="ghost-btn" data-action="close">Закрыть (M)</button>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= DEATH ================= -->
+    <section id="death" class="overlay hidden">
+      <div class="death-card">
+        <h1>ВЫ ПОГИБЛИ</h1>
+        <p class="death-cause" id="death-cause">—</p>
+        <p class="death-by" id="death-by"></p>
+        <div class="death-timer" id="death-timer"></div>
+        <button class="primary-btn" id="respawn-btn" disabled>Возродиться</button>
+        <p class="death-hint">Инвентарь потерян. Начните заново с базовым набором.</p>
+      </div>
+    </section>
+
+    <div id="loading" class="loading">GOLD DAYZ<span>загрузка интерфейса…</span></div>
+    <div id="debug-line" class="debug-line"></div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

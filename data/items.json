@@ -1,0 +1,459 @@
+{
+  "$schema": "./schemas/items.schema.json",
+  "meta": {
+    "version": 1,
+    "description": "Каталог предметов GOLD DAYZ. Правка этого файла не требует пересборки клиента: /reload читает его на сервере и рассылает клиентам."
+  },
+  "items": [
+    {
+      "id": "bandage",
+      "name": "Бинт",
+      "desc": "Останавливает небольшое кровотечение.",
+      "slot": "none",
+      "weight": 0.1,
+      "stack": 10,
+      "rarity": "common",
+      "icon": "🩹",
+      "usable": true,
+      "heal": {
+        "blood": 12,
+        "time": 2500
+      }
+    },
+    {
+      "id": "rags",
+      "name": "Тряпка",
+      "desc": "Кусок ткани, слабо останавливает кровотечение.",
+      "slot": "none",
+      "weight": 0.05,
+      "stack": 20,
+      "rarity": "common",
+      "icon": "🧵",
+      "usable": true,
+      "heal": {
+        "blood": 5,
+        "time": 3500
+      }
+    },
+    {
+      "id": "medkit",
+      "name": "Аптечка",
+      "desc": "Полное лечение. Требует 6 секунд.",
+      "slot": "none",
+      "weight": 1.2,
+      "stack": 3,
+      "rarity": "uncommon",
+      "icon": "💉",
+      "usable": true,
+      "heal": {
+        "blood": 60,
+        "time": 6000
+      }
+    },
+    {
+      "id": "painkiller",
+      "name": "Обезболивающее",
+      "desc": "Снимает тряску и боль, немного восстанавливает здоровье.",
+      "slot": "none",
+      "weight": 0.1,
+      "stack": 8,
+      "rarity": "common",
+      "icon": "💊",
+      "usable": true,
+      "heal": {
+        "blood": 8,
+        "time": 1500
+      }
+    },
+    {
+      "id": "antirad",
+      "name": "Антирад",
+      "desc": "Выводит радиацию из организма.",
+      "slot": "none",
+      "weight": 0.2,
+      "stack": 5,
+      "rarity": "uncommon",
+      "icon": "☢",
+      "usable": true,
+      "heal": {
+        "radiation": 40,
+        "time": 2000
+      }
+    },
+    {
+      "id": "canned_food",
+      "name": "Консервы",
+      "desc": "Сытный обед. Не съешь — умрёшь с голоду.",
+      "slot": "none",
+      "weight": 0.4,
+      "stack": 6,
+      "rarity": "common",
+      "icon": "🥫",
+      "usable": true,
+      "food": {
+        "calories": 45,
+        "water": -5,
+        "time": 3000
+      }
+    },
+    {
+      "id": "beans",
+      "name": "Фасоль",
+      "desc": "Классика выживания.",
+      "slot": "none",
+      "weight": 0.35,
+      "stack": 6,
+      "rarity": "common",
+      "icon": "🫘",
+      "usable": true,
+      "food": {
+        "calories": 35,
+        "water": -8,
+        "time": 3000
+      }
+    },
+    {
+      "id": "water_bottle",
+      "name": "Фляга с водой",
+      "desc": "Восполняет жажду.",
+      "slot": "none",
+      "weight": 0.6,
+      "stack": 4,
+      "rarity": "common",
+      "icon": "💧",
+      "usable": true,
+      "food": {
+        "calories": 0,
+        "water": 40,
+        "time": 2500
+      }
+    },
+    {
+      "id": "soda",
+      "name": "Газировка",
+      "desc": "Вредно, но вкусно.",
+      "slot": "none",
+      "weight": 0.4,
+      "stack": 4,
+      "rarity": "common",
+      "icon": "🥤",
+      "usable": true,
+      "food": {
+        "calories": 5,
+        "water": 20,
+        "time": 2000
+      }
+    },
+    {
+      "id": "knife",
+      "name": "Нож",
+      "desc": "Тихий, надёжный, смертельный.",
+      "slot": "melee",
+      "weight": 1.0,
+      "stack": 1,
+      "rarity": "common",
+      "icon": "🔪",
+      "equipable": true,
+      "weapon": {
+        "hash": 2578778090,
+        "damage": 40,
+        "range": 1.8,
+        "rate": 700,
+        "ammoType": null,
+        "mag": 0
+      }
+    },
+    {
+      "id": "bat",
+      "name": "Бейсбольная бита",
+      "desc": "Оглушает и ломает.",
+      "slot": "melee",
+      "weight": 1.8,
+      "stack": 1,
+      "rarity": "common",
+      "icon": "🏏",
+      "equipable": true,
+      "weapon": {
+        "hash": 2508868239,
+        "damage": 30,
+        "range": 2.0,
+        "rate": 900,
+        "ammoType": null,
+        "mag": 0
+      }
+    },
+    {
+      "id": "crowbar",
+      "name": "Лом",
+      "desc": "Инструмент и оружие в одном лице.",
+      "slot": "melee",
+      "weight": 2.4,
+      "stack": 1,
+      "rarity": "common",
+      "icon": "⛏",
+      "equipable": true,
+      "weapon": {
+        "hash": 2227010557,
+        "damage": 32,
+        "range": 2.1,
+        "rate": 850,
+        "ammoType": null,
+        "mag": 0
+      }
+    },
+    {
+      "id": "pistol",
+      "name": "Пистолет",
+      "desc": "Шумно. Зомби придут на звук.",
+      "slot": "primary",
+      "weight": 1.4,
+      "stack": 1,
+      "rarity": "rare",
+      "icon": "🔫",
+      "equipable": true,
+      "weapon": {
+        "hash": 453432689,
+        "damage": 28,
+        "range": 35,
+        "rate": 250,
+        "ammoType": "ammo_9mm",
+        "mag": 12,
+        "silenced": false,
+        "noise": 110
+      }
+    },
+    {
+      "id": "pumpshotgun",
+      "name": "Дробовик",
+      "desc": "Убийственно на дистанции 5 метров.",
+      "slot": "primary",
+      "weight": 3.6,
+      "stack": 1,
+      "rarity": "rare",
+      "icon": "🪖",
+      "equipable": true,
+      "weapon": {
+        "hash": 487013001,
+        "damage": 65,
+        "range": 18,
+        "rate": 900,
+        "ammoType": "ammo_shell",
+        "mag": 8,
+        "noise": 160
+      }
+    },
+    {
+      "id": "microsmg",
+      "name": "ПП «Микро»",
+      "desc": "Быстро тратит патроны, но валит толпу.",
+      "slot": "primary",
+      "weight": 2.8,
+      "stack": 1,
+      "rarity": "rare",
+      "icon": "🔫",
+      "equipable": true,
+      "weapon": {
+        "hash": 324215364,
+        "damage": 18,
+        "range": 40,
+        "rate": 90,
+        "ammoType": "ammo_9mm",
+        "mag": 15,
+        "noise": 140
+      }
+    },
+    {
+      "id": "carbinerifle",
+      "name": "Карабин",
+      "desc": "Универсальная винтовка выжившего.",
+      "slot": "primary",
+      "weight": 3.4,
+      "stack": 1,
+      "rarity": "epic",
+      "icon": "🔫",
+      "equipable": true,
+      "weapon": {
+        "hash": 2210333304,
+        "damage": 36,
+        "range": 75,
+        "rate": 140,
+        "ammoType": "ammo_556",
+        "mag": 20,
+        "noise": 170
+      }
+    },
+    {
+      "id": "sniperrifle",
+      "name": "Снайперская винтовка",
+      "desc": "Громкая, медленная, убивает зомби с одного выстрела.",
+      "slot": "primary",
+      "weight": 5.2,
+      "stack": 1,
+      "rarity": "legendary",
+      "icon": "🎯",
+      "equipable": true,
+      "weapon": {
+        "hash": 100416529,
+        "damage": 120,
+        "range": 160,
+        "rate": 1400,
+        "ammoType": "ammo_762",
+        "mag": 5,
+        "noise": 250
+      }
+    },
+    {
+      "id": "ammo_9mm",
+      "name": "Патроны 9 мм",
+      "desc": "Для пистолета и ПП.",
+      "slot": "none",
+      "weight": 0.02,
+      "stack": 120,
+      "rarity": "common",
+      "icon": "▪",
+      "ammo": true
+    },
+    {
+      "id": "ammo_shell",
+      "name": "Патроны 12к",
+      "desc": "Для дробовика.",
+      "slot": "none",
+      "weight": 0.04,
+      "stack": 60,
+      "rarity": "uncommon",
+      "icon": "▪",
+      "ammo": true
+    },
+    {
+      "id": "ammo_556",
+      "name": "Патроны 5.56",
+      "desc": "Для карабина.",
+      "slot": "none",
+      "weight": 0.03,
+      "stack": 90,
+      "rarity": "uncommon",
+      "icon": "▪",
+      "ammo": true
+    },
+    {
+      "id": "ammo_762",
+      "name": "Патроны 7.62",
+      "desc": "Для снайперской винтовки.",
+      "slot": "none",
+      "weight": 0.05,
+      "stack": 40,
+      "rarity": "rare",
+      "icon": "▪",
+      "ammo": true
+    },
+    {
+      "id": "backpack",
+      "name": "Рюкзак",
+      "desc": "+30 слотов под предметы.",
+      "slot": "back",
+      "weight": 0.0,
+      "stack": 1,
+      "rarity": "rare",
+      "icon": "🎒",
+      "equipable": true,
+      "storage": 30
+    },
+    {
+      "id": "vest",
+      "name": "Разгрузка",
+      "desc": "+12 слотов и -15% входящего урона.",
+      "slot": "armor",
+      "weight": 0.0,
+      "stack": 1,
+      "rarity": "epic",
+      "icon": "🦺",
+      "equipable": true,
+      "storage": 12,
+      "damageReduction": 0.15
+    },
+    {
+      "id": "gas_mask",
+      "name": "Противогаз",
+      "desc": "Защита от токсичных зон.",
+      "slot": "mask",
+      "weight": 1.0,
+      "stack": 1,
+      "rarity": "uncommon",
+      "icon": "😷",
+      "equipable": true,
+      "gasProtection": 0.8
+    },
+    {
+      "id": "flashlight",
+      "name": "Фонарь",
+      "desc": "Освещает путь в темноте.",
+      "slot": "hands",
+      "weight": 0.5,
+      "stack": 1,
+      "rarity": "common",
+      "icon": "🔆",
+      "equipable": true
+    },
+    {
+      "id": "radio",
+      "name": "Рация",
+      "desc": "Позволяет писать в общий эфир через /r.",
+      "slot": "hands",
+      "weight": 0.8,
+      "stack": 1,
+      "rarity": "uncommon",
+      "icon": "📻",
+      "equipable": true,
+      "radio": true
+    },
+    {
+      "id": "map",
+      "name": "Карта",
+      "desc": "Открывает карту лут-зон (клавиша M).",
+      "slot": "none",
+      "weight": 0.2,
+      "stack": 1,
+      "rarity": "uncommon",
+      "icon": "🗺",
+      "usable": true,
+      "unlocksMap": true
+    },
+    {
+      "id": "canteen",
+      "name": "Походная кружка",
+      "desc": "Многоразовая ёмкость для воды. /fill — наполнить у воды.",
+      "slot": "none",
+      "weight": 0.5,
+      "stack": 1,
+      "rarity": "common",
+      "icon": "🥤",
+      "usable": true,
+      "food": {
+        "calories": 0,
+        "water": 50,
+        "time": 2500
+      },
+      "reusable": true
+    },
+    {
+      "id": "wood",
+      "name": "Дрова",
+      "desc": "Материал для костра.",
+      "slot": "none",
+      "weight": 1.0,
+      "stack": 20,
+      "rarity": "common",
+      "icon": "🪵"
+    },
+    {
+      "id": "scrap",
+      "name": "Металлолом",
+      "desc": "Материал для ремонта.",
+      "slot": "none",
+      "weight": 1.5,
+      "stack": 20,
+      "rarity": "common",
+      "icon": "🔩"
+    }
+  ]
+}

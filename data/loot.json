@@ -1,0 +1,385 @@
+{
+  "$schema": "./schemas/loot.schema.json",
+  "meta": {
+    "version": 1,
+    "description": "Таблицы лута. weight — относительная вероятность, min/max — количество в стаке."
+  },
+  "tables": {
+    "civilian": [
+      {
+        "item": "rags",
+        "weight": 14,
+        "min": 1,
+        "max": 4
+      },
+      {
+        "item": "bandage",
+        "weight": 10,
+        "min": 1,
+        "max": 3
+      },
+      {
+        "item": "canned_food",
+        "weight": 12,
+        "min": 1,
+        "max": 2
+      },
+      {
+        "item": "water_bottle",
+        "weight": 10,
+        "min": 1,
+        "max": 2
+      },
+      {
+        "item": "soda",
+        "weight": 8,
+        "min": 1,
+        "max": 2
+      },
+      {
+        "item": "knife",
+        "weight": 6,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "bat",
+        "weight": 5,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "crowbar",
+        "weight": 4,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "flashlight",
+        "weight": 7,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "map",
+        "weight": 6,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "canteen",
+        "weight": 6,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "backpack",
+        "weight": 3,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "wood",
+        "weight": 8,
+        "min": 1,
+        "max": 5
+      },
+      {
+        "item": "scrap",
+        "weight": 7,
+        "min": 1,
+        "max": 3
+      },
+      {
+        "item": "radio",
+        "weight": 3,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "painkiller",
+        "weight": 5,
+        "min": 1,
+        "max": 2
+      }
+    ],
+    "medical": [
+      {
+        "item": "bandage",
+        "weight": 18,
+        "min": 1,
+        "max": 4
+      },
+      {
+        "item": "rags",
+        "weight": 10,
+        "min": 1,
+        "max": 3
+      },
+      {
+        "item": "painkiller",
+        "weight": 12,
+        "min": 1,
+        "max": 2
+      },
+      {
+        "item": "medkit",
+        "weight": 8,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "antirad",
+        "weight": 6,
+        "min": 1,
+        "max": 2
+      },
+      {
+        "item": "water_bottle",
+        "weight": 8,
+        "min": 1,
+        "max": 2
+      }
+    ],
+    "food": [
+      {
+        "item": "canned_food",
+        "weight": 20,
+        "min": 1,
+        "max": 3
+      },
+      {
+        "item": "beans",
+        "weight": 16,
+        "min": 1,
+        "max": 3
+      },
+      {
+        "item": "water_bottle",
+        "weight": 16,
+        "min": 1,
+        "max": 2
+      },
+      {
+        "item": "soda",
+        "weight": 12,
+        "min": 1,
+        "max": 3
+      },
+      {
+        "item": "canteen",
+        "weight": 4,
+        "min": 1,
+        "max": 1
+      }
+    ],
+    "police": [
+      {
+        "item": "pistol",
+        "weight": 10,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "ammo_9mm",
+        "weight": 18,
+        "min": 12,
+        "max": 36
+      },
+      {
+        "item": "vest",
+        "weight": 5,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "bandage",
+        "weight": 10,
+        "min": 1,
+        "max": 3
+      },
+      {
+        "item": "flashlight",
+        "weight": 7,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "radio",
+        "weight": 6,
+        "min": 1,
+        "max": 1
+      }
+    ],
+    "military": [
+      {
+        "item": "carbinerifle",
+        "weight": 6,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "microsmg",
+        "weight": 8,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "pumpshotgun",
+        "weight": 8,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "sniperrifle",
+        "weight": 2,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "ammo_556",
+        "weight": 14,
+        "min": 15,
+        "max": 45
+      },
+      {
+        "item": "ammo_shell",
+        "weight": 12,
+        "min": 8,
+        "max": 24
+      },
+      {
+        "item": "ammo_762",
+        "weight": 6,
+        "min": 5,
+        "max": 15
+      },
+      {
+        "item": "vest",
+        "weight": 8,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "medkit",
+        "weight": 8,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "antirad",
+        "weight": 6,
+        "min": 1,
+        "max": 2
+      }
+    ],
+    "industrial": [
+      {
+        "item": "scrap",
+        "weight": 20,
+        "min": 2,
+        "max": 6
+      },
+      {
+        "item": "wood",
+        "weight": 14,
+        "min": 2,
+        "max": 8
+      },
+      {
+        "item": "crowbar",
+        "weight": 8,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "flashlight",
+        "weight": 8,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "gas_mask",
+        "weight": 4,
+        "min": 1,
+        "max": 1
+      }
+    ],
+    "zombie_common": [
+      {
+        "item": "rags",
+        "weight": 22,
+        "min": 1,
+        "max": 3
+      },
+      {
+        "item": "bandage",
+        "weight": 10,
+        "min": 1,
+        "max": 2
+      },
+      {
+        "item": "scrap",
+        "weight": 8,
+        "min": 1,
+        "max": 2
+      },
+      {
+        "item": "canned_food",
+        "weight": 6,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "ammo_9mm",
+        "weight": 5,
+        "min": 3,
+        "max": 8
+      },
+      {
+        "item": "radio",
+        "weight": 2,
+        "min": 1,
+        "max": 1
+      }
+    ],
+    "zombie_rare": [
+      {
+        "item": "medkit",
+        "weight": 12,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "pistol",
+        "weight": 8,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "ammo_9mm",
+        "weight": 12,
+        "min": 6,
+        "max": 18
+      },
+      {
+        "item": "vest",
+        "weight": 5,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "carbinerifle",
+        "weight": 3,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "ammo_556",
+        "weight": 5,
+        "min": 5,
+        "max": 15
+      }
+    ]
+  }
+}

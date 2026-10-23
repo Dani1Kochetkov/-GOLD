@@ -1,0 +1,83 @@
+{
+  "$schema": "./schemas/zombies.schema.json",
+  "meta": {
+    "version": 1,
+    "description": "Типы зомби GOLD DAYZ. Правки применяются командой /reload или перезапуском сервера."
+  },
+  "zombies": [
+    {
+      "id": "walker",
+      "name": "Ходячий",
+      "model": "u_m_y_zombie_01",
+      "tint": 0,
+      "health": 100,
+      "speedWalk": 0.55,
+      "speedRun": 2.1,
+      "damage": 8,
+      "attackRange": 1.6,
+      "attackRate": 1400,
+      "detectRange": 22,
+      "chaseRange": 55,
+      "score": 10,
+      "lootTable": "zombie_common",
+      "spawnWeight": 70
+    },
+    {
+      "id": "runner",
+      "name": "Бегун",
+      "model": "u_m_y_zombie_01",
+      "tint": 2,
+      "health": 70,
+      "speedWalk": 1.2,
+      "speedRun": 3.4,
+      "damage": 10,
+      "attackRange": 1.6,
+      "attackRate": 1100,
+      "detectRange": 30,
+      "chaseRange": 70,
+      "score": 15,
+      "lootTable": "zombie_common",
+      "spawnWeight": 22
+    },
+    {
+      "id": "brute",
+      "name": "Громила",
+      "model": "u_m_y_zombie_01",
+      "tint": 4,
+      "health": 320,
+      "speedWalk": 0.45,
+      "speedRun": 1.6,
+      "damage": 22,
+      "attackRange": 2.0,
+      "attackRate": 1800,
+      "detectRange": 18,
+      "chaseRange": 45,
+      "score": 40,
+      "lootTable": "zombie_rare",
+      "spawnWeight": 8,
+      "boss": false
+    },
+    {
+      "id": "screamer",
+      "name": "Крикун",
+      "model": "u_m_y_zombie_01",
+      "tint": 6,
+      "health": 140,
+      "speedWalk": 0.7,
+      "speedRun": 2.6,
+      "damage": 6,
+      "attackRange": 1.6,
+      "attackRate": 1600,
+      "detectRange": 26,
+      "chaseRange": 60,
+      "score": 25,
+      "lootTable": "zombie_rare",
+      "spawnWeight": 0,
+      "onScream": {
+        "radius": 60,
+        "aggro": 24,
+        "cooldown": 9000
+      }
+    }
+  ]
+}

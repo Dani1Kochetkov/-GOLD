@@ -1,0 +1,96 @@
+{
+  "meta": {
+    "version": 1,
+    "description": "Игровые настройки GOLD DAYZ. Применяются при старте сервера; часть — через /reload."
+  },
+  "server": {
+    "name": "GOLD DAYZ",
+    "tickMs": 100,
+    "hudIntervalMs": 500,
+    "persistIntervalMs": 60000,
+    "defaultDimension": 0
+  },
+  "world": {
+    "pvp": true,
+    "pvpDamageMultiplier": 1.0,
+    "zombieGlobalCap": 120,
+    "lootRespawnMs": 210000,
+    "lootTopUpMs": 20000,
+    "dropDespawnMs": 900000,
+    "corpseDespawnMs": 600000,
+    "nightZombieMultiplier": 1.5,
+    "toxinTickMs": 1000
+  },
+  "survival": {
+    "enabled": true,
+    "syncHealthToGame": true,
+    "bleedingChanceZombie": 0.35,
+    "bleedingChanceBullet": 0.25,
+    "fallDamageEnabled": true,
+    "waterZonesDamage": false
+  },
+  "spawn": {
+    "starterItems": [
+      {
+        "item": "rags",
+        "count": 2
+      },
+      {
+        "item": "soda",
+        "count": 1
+      },
+      {
+        "item": "knife",
+        "count": 1
+      },
+      {
+        "item": "map",
+        "count": 1
+      }
+    ],
+    "minDistanceFromZombies": 45,
+    "respawnDelayMs": 12000,
+    "autoRespawn": false,
+    "invulnerableAfterSpawnMs": 4000
+  },
+  "zombies": {
+    "mode": "client",
+    "initialFill": 0.65,
+    "spawnIntervalMs": 2200,
+    "spawnAttemptsPerTick": 3,
+    "despawnDistance": 420,
+    "despawnIdleMs": 120000,
+    "minSpawnDistanceFromPlayers": 35,
+    "maxSpawnDistanceFromPlayers": 300,
+    "corpseTtlMs": 90000,
+    "snapshotRadius": 320
+  },
+  "loot": {
+    "pickupRange": 3.0,
+    "interactRange": 3.0,
+    "maxGroundItems": 900,
+    "zombieLootChance": 0.45
+  },
+  "inventory": {
+    "persist": true,
+    "maxWeightKg": 30,
+    "dropOnDeath": true,
+    "starterOnRespawn": true,
+    "useCooldownMs": 900
+  },
+  "persistence": {
+    "enabled": true,
+    "directory": "storage/players",
+    "saveOnDisconnect": true
+  },
+  "admin": {
+    "enabled": true,
+    "commandsFromLocalhostOnly": true
+  },
+  "debug": {
+    "logSnapshots": false,
+    "logZombieActions": false,
+    "metricsIntervalMs": 30000,
+    "chatFeedback": true
+  }
+}
