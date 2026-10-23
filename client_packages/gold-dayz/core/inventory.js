@@ -6,7 +6,7 @@
  * Панели рисуют CEF; действия приходят сюда через mp.trigger('ui:invAction').
  */
 
-const bus = require('./gold-dayz/core/bus.js');
+const bus = mp.__goldBus;
 
 let invBrowser = null;
 let invReady = false;

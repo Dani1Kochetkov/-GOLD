@@ -6,7 +6,7 @@
  *  - морфин снимает режим (событие с сервера).
  */
 
-const bus = require('./gold-dayz/core/bus.js');
+const bus = mp.__goldBus;
 
 let fracture = false;
 let alive = true;

@@ -28,7 +28,12 @@ db.init().then(() => {
 
 /* ------------------------------- Общие события ------------------------------- */
 
+mp.events.add('playerJoin', (player) => {
+	console.log(`[GOLD] Игрок подключился: ${player.name} (IP ${player.ip})`);
+});
+
 mp.events.add('playerReady', (player) => {
+	console.log(`[GOLD] Игрок загрузился: ${player.name} — клиентские ресурсы отданы`);
 	stats.ensureData(player);
 	world.pushMode(player);
 	player.outputChatBox('!{0,#ff5555}[GOLD DAYZ] !{0,ffffff}Добро пожаловать. ' +

@@ -6,7 +6,7 @@
  * + чёрно-белый эффект экрана при низкой крови (timecycle 'blackNwhite').
  */
 
-const bus = require('./gold-dayz/core/bus.js');
+const bus = mp.__goldBus;
 
 let hudBrowser = null;
 let hudReady = false;
