@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta charset="utf-8">
+	<title>GOLD DAYZ — Инвентарь</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<div id="wrap" class="hidden">
+		<div id="panel">
+			<header>
+				<div class="ttl">ИНВЕНТАРЬ <span class="key">[J]</span></div>
+				<div id="char-stats"></div>
+				<button id="btn-close" title="Закрыть (ESC)">✕</button>
+			</header>
+
+			<div class="cols">
+				<!-- ЛЕВАЯ ПАНЕЛЬ: земля / багажник машины -->
+				<section class="col">
+					<div class="col-head">
+						<button class="tab active" id="tab-ground">НА ЗЕМЛЕ</button>
+						<button class="tab" id="tab-vehicle">МАШИНА</button>
+					</div>
+					<div id="weight-ground" class="hint"></div>
+					<div id="left-list" class="list"></div>
+					<div id="veh-actions" class="veh-actions hidden"></div>
+				</section>
+
+				<!-- ПРАВАЯ ПАНЕЛЬ: ваш инвентарь -->
+				<section class="col">
+					<div class="col-head right">
+						<span>ВАШ РЮКЗАК</span>
+					</div>
+					<div id="weight-self">
+						<div class="wrow"><span>Вес</span><span id="w-text">0 / 30 кг</span></div>
+						<div class="wbar"><i id="w-fill" style="width:0%"></i></div>
+						<div id="slots" class="slots"></div>
+					</div>
+					<div id="right-list" class="list"></div>
+				</section>
+			</div>
+
+			<footer>
+				<span><b>E</b> открыть у машины/лута</span>
+				<span><b>ЛКМ</b> кнопки действий</span>
+				<span><b>ESC / J</b> закрыть</span>
+			</footer>
+		</div>
+	</div>
+
+	<script src="script.js"></script>
+</body>
+</html>

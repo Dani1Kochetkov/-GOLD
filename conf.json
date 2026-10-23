@@ -1,0 +1,15 @@
+{
+	"announce": false,
+	"bind": "127.0.0.1",
+	"gamemode": "gold-dayz",
+	"maxplayers": 50,
+	"name": "GOLD DAYZ [LOCAL TEST]",
+	"language": "ru",
+	"port": 22005,
+	"stream-distance": 400.0,
+	"sync-rate": 40,
+	"enable-nodejs": true,
+	"allow-cef-debugging": true,
+	"voice-chat": false,
+	"disallow-multiple-connections-per-ip": false
+}

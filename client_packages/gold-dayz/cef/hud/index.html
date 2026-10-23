@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta charset="utf-8">
+	<title>GOLD DAYZ HUD</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<!-- оверлеи на весь экран -->
+	<div id="night" class="overlay"></div>
+	<div id="shock" class="overlay"></div>
+	<div id="flash" class="overlay"></div>
+
+	<div id="death" class="hidden">
+		<div class="death-box">
+			<h1>ВЫ ПОГИБЛИ</h1>
+			<p>Возвращение в мир через несколько секунд…</p>
+		</div>
+	</div>
+
+	<!-- вертикальный столбец иконок справа: классика MTA DayZ -->
+	<div id="stats" class="hidden">
+		<div class="stat" id="st-blood">
+			<div class="icon">
+				<svg viewBox="0 0 24 24"><path d="M12 21s-9-6.3-9-12.2C3 5.9 5.2 4 7.7 4c1.7 0 3.2.9 4.3 2.4C13.1 4.9 14.6 4 16.3 4 18.8 4 21 5.9 21 8.8 21 14.7 12 21 12 21z"/></svg>
+			</div>
+			<div class="body">
+				<div class="row"><span class="label">КРОВЬ</span><span class="value" id="v-blood">12000 / 12000</span></div>
+				<div class="bar"><i id="b-blood" style="width:100%"></i></div>
+			</div>
+		</div>
+
+		<div class="stat" id="st-food">
+			<div class="icon">
+				<svg viewBox="0 0 24 24"><path d="M15.5 3a4.5 4.5 0 0 0-4.3 5.7L6.3 13.6c-1 .9-1.3 2.4-.6 3.6l.8 1.4c.7 1.2 2.2 1.7 3.5 1.2l1.5-.6 1.8 1.8.6-1.5c.5-1.3 0-2.8-1.2-3.5l-1.4-.8c-1.2-.7-2.7-.4-3.6.6l-.3.3 4.4-4.5A4.5 4.5 0 1 0 15.5 3z"/></svg>
+			</div>
+			<div class="body">
+				<div class="row"><span class="label">ЕДА</span><span class="value" id="v-food">100</span></div>
+				<div class="bar"><i id="b-food" style="width:100%"></i></div>
+			</div>
+		</div>
+
+		<div class="stat" id="st-water">
+			<div class="icon">
+				<svg viewBox="0 0 24 24"><path d="M12 3s6 6.6 6 10.5A6 6 0 1 1 6 13.5C6 9.6 12 3 12 3z"/></svg>
+			</div>
+			<div class="body">
+				<div class="row"><span class="label">ВОДА</span><span class="value" id="v-water">100</span></div>
+				<div class="bar"><i id="b-water" style="width:100%"></i></div>
+			</div>
+		</div>
+
+		<div class="stat" id="st-temp">
+			<div class="icon">
+				<svg viewBox="0 0 24 24"><path d="M14 14.9V5a2 2 0 1 0-4 0v9.9a4 4 0 1 0 4 0z"/><circle cx="12" cy="17.5" r="1.6"/></svg>
+			</div>
+			<div class="body">
+				<div class="row"><span class="label">ТЕМПЕРАТУРА</span><span class="value" id="v-temp">36.6°</span></div>
+				<div class="bar"><i id="b-temp" style="width:55%"></i></div>
+			</div>
+		</div>
+
+		<div class="stat" id="st-noise">
+			<div class="icon">
+				<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 9.5c1.3 1.1 1.3 3.9 0 5M18.5 7c2.6 2.2 2.6 7.8 0 10" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+			</div>
+			<div class="body">
+				<div class="row"><span class="label">ШУМ</span><span class="value" id="v-noise">0</span></div>
+				<div class="bar"><i id="b-noise" style="width:0%"></i></div>
+			</div>
+		</div>
+
+		<div class="stat" id="st-vis">
+			<div class="icon">
+				<svg viewBox="0 0 24 24"><path d="M12 5C6.5 5 2.7 9.4 2 12c.7 2.6 4.5 7 10 7s9.3-4.4 10-7c-.7-2.6-4.5-7-10-7z"/><circle cx="12" cy="12" r="3.2" fill="#0b0c10"/></svg>
+			</div>
+			<div class="body">
+				<div class="row"><span class="label">ВИДИМОСТЬ</span><span class="value" id="v-vis">60</span></div>
+				<div class="bar"><i id="b-vis" style="width:60%"></i></div>
+			</div>
+		</div>
+
+		<div id="badges">
+			<div class="badge" id="bd-bleed">🩸 КРОВОТЕЧЕНИЕ</div>
+			<div class="badge" id="bd-fract">🦴 ПЕРЕЛОМ — ПОЛЗИТЕ</div>
+			<div class="badge" id="bd-shock">⚡ ШОК</div>
+		</div>
+	</div>
+
+	<!-- чип состояния машины (появляется в транспорте) -->
+	<div id="vehchip" class="hidden">
+		<span id="vc-engine" class="vc off">ДВС</span>
+		<span id="vc-wheels" class="vc off">КОЛ</span>
+		<span id="vc-fuel">0 л</span>
+	</div>
+
+	<script src="script.js"></script>
+</body>
+</html>
