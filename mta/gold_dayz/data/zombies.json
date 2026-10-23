@@ -1,0 +1,30 @@
+{
+  "meta": { "version": 1, "description": "Типы зомби и мутантов. skins — стандартные скины GTA SA; замените на кастомные модели при желании." },
+  "types": [
+    {
+      "id": "walker", "name": "Ходячий", "skins": [7, 8, 9, 12, 13, 14, 20, 21, 22, 23],
+      "health": 90, "speed": 2.2, "damage": 9, "attackRange": 1.9, "attackInterval": 1600,
+      "detectRange": 30, "chaseRange": 80, "leash": 120, "lootTable": "zombie_common", "weight": 55
+    },
+    {
+      "id": "runner", "name": "Бегун", "skins": [29, 30, 31, 20, 21, 22],
+      "health": 70, "speed": 5.2, "damage": 12, "attackRange": 1.8, "attackInterval": 1200,
+      "detectRange": 45, "chaseRange": 110, "leash": 150, "lootTable": "zombie_common", "weight": 28
+    },
+    {
+      "id": "brute", "name": "Громила", "skins": [41, 42, 43, 44, 45],
+      "health": 300, "speed": 2.9, "damage": 27, "attackRange": 2.2, "attackInterval": 1800,
+      "detectRange": 28, "chaseRange": 70, "leash": 90, "lootTable": "zombie_elite", "weight": 11
+    },
+    {
+      "id": "hunter", "name": "Мутант-охотник", "skins": [44, 45, 46],
+      "health": 520, "speed": 4.6, "damage": 22, "attackRange": 2.0, "attackInterval": 1300,
+      "detectRange": 60, "chaseRange": 140, "leash": 170, "lootTable": "zombie_elite", "weight": 4
+    },
+    {
+      "id": "boss", "name": "Исполин", "skins": [44], "boss": true,
+      "health": 1600, "speed": 2.6, "damage": 42, "attackRange": 2.6, "attackInterval": 2100,
+      "detectRange": 55, "chaseRange": 140, "leash": 170, "lootTable": "boss", "weight": 0
+    }
+  ]
+}

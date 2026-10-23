@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GOLD DAYZ</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+
+    <!-- ВХОД -->
+    <section id="scr-login" class="screen screen-login hidden">
+      <div class="login-wrap">
+        <div class="brand">
+          <div class="brand-mark">GOLD<span>DAYZ</span></div>
+          <div class="brand-rule"></div>
+          <p class="brand-tag">Пустошь не прощает слабых.<br />Собирай, торгуй, выживай.</p>
+          <ul class="brand-list">
+            <li><b>Зомби и мутанты</b><span>ходячие, бегуны, громилы, охотники и исполины</span></li>
+            <li><b>Выживание</b><span>голод, жажда, кровь, радиация, температура</span></li>
+            <li><b>Лут и крафт</b><span>оружие, медицина, патроны, самоделки</span></li>
+            <li><b>Торговцы и базы</b><span>лавки в лагерях, склады с PIN-кодом</span></li>
+          </ul>
+          <div class="brand-foot">GOLD DAYZ · MTA:SA · v<span id="ver">1.0.0</span></div>
+        </div>
+
+        <form id="login-form" class="card login-card" autocomplete="off">
+          <div class="kicker">Сервер выживания</div>
+          <h2>Вход в пустошь</h2>
+          <label class="field">
+            <span>Позывной</span>
+            <input id="login-user" maxlength="24" spellcheck="false" autocapitalize="off" />
+          </label>
+          <label class="field">
+            <span>Пароль</span>
+            <input id="login-pass" type="password" maxlength="72" />
+          </label>
+          <div id="login-error" class="error-line"></div>
+          <div class="row gap">
+            <button type="submit" class="btn primary">Войти</button>
+            <button type="button" class="btn ghost" id="btn-register">Регистрация</button>
+          </div>
+          <p class="hint">Пароль хранится в виде соль+sha256. Не используйте пароль от других сервисов.</p>
+        </form>
+      </div>
+    </section>
+
+    <!-- ПЕРСОНАЖ -->
+    <section id="scr-char" class="screen hidden">
+      <div class="card wide">
+        <div class="kicker">Новый выживший</div>
+        <h2 id="char-name">Выживший</h2>
+        <p class="muted">Выберите, где начнётся ваша история. Дальше — только вы и пустошь.</p>
+
+        <h3>Точка появления</h3>
+        <div id="spawn-list" class="choice-grid"></div>
+
+        <h3>Внешность</h3>
+        <div id="skin-list" class="choice-grid skins"></div>
+
+        <div class="row between">
+          <span class="muted small">Совет: первые минуты лучше провести в лагере и осмотреться.</span>
+          <button id="btn-spawn" class="btn primary big">Начать выживание</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- СМЕРТЬ -->
+    <section id="scr-death" class="screen screen-death hidden">
+      <div class="card">
+        <div class="kicker danger">Потеря сигнала</div>
+        <h2 class="danger">Вы погибли</h2>
+        <p id="death-cause" class="death-cause"></p>
+        <div id="death-stats" class="stat-row"></div>
+
+        <h3>Точка возрождения</h3>
+        <div id="death-spawns" class="choice-grid"></div>
+
+        <div class="row between">
+          <span id="death-timer" class="muted"></span>
+          <button id="btn-respawn" class="btn primary big" disabled>Возродиться</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ПАНЕЛИ -->
+    <div id="panel-layer" class="panel-layer hidden">
+      <div class="panel">
+        <header class="panel-head">
+          <div>
+            <div class="kicker" id="panel-kicker">Инвентарь</div>
+            <h2 id="panel-title">Выживший</h2>
+          </div>
+          <button class="btn icon" data-act="close" title="Закрыть">✕</button>
+        </header>
+        <div class="panel-body" id="panel-body"></div>
+        <footer class="panel-foot" id="panel-foot"></footer>
+      </div>
+    </div>
+
+    <div id="toasts" class="toasts"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

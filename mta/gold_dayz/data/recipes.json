@@ -1,0 +1,41 @@
+{
+  "meta": { "version": 1, "description": "Рецепты крафта. bench=true — нужен верстак в безопасном лагере или на базе." },
+  "recipes": [
+    {
+      "id": "craft_bandage", "name": "Бинт", "out": "bandage", "count": 1, "bench": false,
+      "in": [ { "item": "rags", "count": 3 } ]
+    },
+    {
+      "id": "craft_medkit", "name": "Аптечка", "out": "medkit", "count": 1, "bench": true,
+      "in": [ { "item": "bandage", "count": 3 }, { "item": "painkiller", "count": 2 }, { "item": "duct_tape", "count": 1 } ]
+    },
+    {
+      "id": "craft_repair_kit", "name": "Ремкомплект", "out": "repair_kit", "count": 1, "bench": true,
+      "in": [ { "item": "scrap", "count": 3 }, { "item": "duct_tape", "count": 2 } ]
+    },
+    {
+      "id": "craft_molotov", "name": "Коктейль Молотова", "out": "molotov", "count": 1, "bench": false,
+      "in": [ { "item": "vodka", "count": 1 }, { "item": "rags", "count": 2 } ]
+    },
+    {
+      "id": "craft_bat", "name": "Бита", "out": "bat", "count": 1, "bench": false,
+      "in": [ { "item": "wood", "count": 2 }, { "item": "scrap", "count": 1 } ]
+    },
+    {
+      "id": "craft_knife", "name": "Нож", "out": "knife", "count": 1, "bench": true,
+      "in": [ { "item": "scrap", "count": 2 }, { "item": "wood", "count": 1 } ]
+    },
+    {
+      "id": "craft_backpack", "name": "Старый рюкзак", "out": "backpack_small", "count": 1, "bench": true,
+      "in": [ { "item": "rags", "count": 5 }, { "item": "rope", "count": 2 } ]
+    },
+    {
+      "id": "craft_armor", "name": "Лёгкий бронежилет", "out": "armor_light", "count": 1, "bench": true,
+      "in": [ { "item": "scrap", "count": 6 }, { "item": "duct_tape", "count": 3 } ]
+    },
+    {
+      "id": "craft_flashlight", "name": "Фонарик", "out": "flashlight", "count": 1, "bench": true,
+      "in": [ { "item": "scrap", "count": 2 }, { "item": "duct_tape", "count": 1 } ]
+    }
+  ]
+}

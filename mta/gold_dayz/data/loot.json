@@ -1,0 +1,123 @@
+{
+  "meta": { "version": 1, "description": "Таблицы лута. weight — относительный шанс, min/max — количество." },
+  "tables": {
+    "civilian": [
+      { "item": "rags", "weight": 14, "min": 1, "max": 4 },
+      { "item": "bandage", "weight": 10, "min": 1, "max": 2 },
+      { "item": "canned_food", "weight": 11, "min": 1, "max": 2 },
+      { "item": "water_bottle", "weight": 10, "min": 1, "max": 1 },
+      { "item": "soda", "weight": 8, "min": 1, "max": 2 },
+      { "item": "energy_bar", "weight": 7, "min": 1, "max": 2 },
+      { "item": "knife", "weight": 4, "min": 1, "max": 1 },
+      { "item": "bat", "weight": 4, "min": 1, "max": 1 },
+      { "item": "flashlight", "weight": 5, "min": 1, "max": 1 },
+      { "item": "map", "weight": 4, "min": 1, "max": 1 },
+      { "item": "backpack_small", "weight": 3, "min": 1, "max": 1 },
+      { "item": "scrap", "weight": 8, "min": 1, "max": 3 },
+      { "item": "duct_tape", "weight": 6, "min": 1, "max": 2 },
+      { "item": "rope", "weight": 4, "min": 1, "max": 1 },
+      { "item": "empty_bottle", "weight": 5, "min": 1, "max": 2 },
+      { "item": "wallet", "weight": 3, "min": 1, "max": 1 }
+    ],
+    "food": [
+      { "item": "canned_food", "weight": 18, "min": 1, "max": 3 },
+      { "item": "beans", "weight": 16, "min": 1, "max": 3 },
+      { "item": "water_bottle", "weight": 16, "min": 1, "max": 2 },
+      { "item": "soda", "weight": 12, "min": 1, "max": 3 },
+      { "item": "energy_bar", "weight": 10, "min": 1, "max": 2 },
+      { "item": "vodka", "weight": 6, "min": 1, "max": 1 },
+      { "item": "empty_bottle", "weight": 4, "min": 1, "max": 1 }
+    ],
+    "medical": [
+      { "item": "bandage", "weight": 20, "min": 1, "max": 3 },
+      { "item": "rags", "weight": 14, "min": 1, "max": 3 },
+      { "item": "painkiller", "weight": 12, "min": 1, "max": 2 },
+      { "item": "medkit", "weight": 7, "min": 1, "max": 1 },
+      { "item": "bloodbag", "weight": 5, "min": 1, "max": 1 },
+      { "item": "antirad", "weight": 5, "min": 1, "max": 1 },
+      { "item": "antibiotics", "weight": 4, "min": 1, "max": 1 },
+      { "item": "gasmask", "weight": 2, "min": 1, "max": 1 },
+      { "item": "surgical_kit", "weight": 1, "min": 1, "max": 1 }
+    ],
+    "police": [
+      { "item": "pistol", "weight": 12, "min": 1, "max": 1 },
+      { "item": "silenced", "weight": 5, "min": 1, "max": 1 },
+      { "item": "shotgun", "weight": 7, "min": 1, "max": 1 },
+      { "item": "ammo_pistol", "weight": 16, "min": 1, "max": 3 },
+      { "item": "ammo_shotgun", "weight": 10, "min": 1, "max": 2 },
+      { "item": "armor_light", "weight": 6, "min": 1, "max": 1 },
+      { "item": "bat", "weight": 6, "min": 1, "max": 1 },
+      { "item": "medkit", "weight": 5, "min": 1, "max": 1 },
+      { "item": "flashlight", "weight": 6, "min": 1, "max": 1 },
+      { "item": "wallet", "weight": 4, "min": 1, "max": 1 }
+    ],
+    "military": [
+      { "item": "ak47", "weight": 7, "min": 1, "max": 1 },
+      { "item": "m4", "weight": 6, "min": 1, "max": 1 },
+      { "item": "mp5", "weight": 8, "min": 1, "max": 1 },
+      { "item": "rifle", "weight": 4, "min": 1, "max": 1 },
+      { "item": "ammo_rifle", "weight": 15, "min": 1, "max": 4 },
+      { "item": "ammo_smg", "weight": 10, "min": 1, "max": 3 },
+      { "item": "ammo_shotgun", "weight": 7, "min": 1, "max": 2 },
+      { "item": "grenade", "weight": 5, "min": 1, "max": 1 },
+      { "item": "armor_heavy", "weight": 6, "min": 1, "max": 1 },
+      { "item": "gasmask", "weight": 5, "min": 1, "max": 1 },
+      { "item": "medkit", "weight": 6, "min": 1, "max": 1 },
+      { "item": "repair_kit", "weight": 5, "min": 1, "max": 1 },
+      { "item": "backpack_large", "weight": 3, "min": 1, "max": 1 }
+    ],
+    "top": [
+      { "item": "sniper", "weight": 6, "min": 1, "max": 1 },
+      { "item": "deagle", "weight": 8, "min": 1, "max": 1 },
+      { "item": "m4", "weight": 7, "min": 1, "max": 1 },
+      { "item": "katana", "weight": 5, "min": 1, "max": 1 },
+      { "item": "chainsaw", "weight": 3, "min": 1, "max": 1 },
+      { "item": "armor_military", "weight": 6, "min": 1, "max": 1 },
+      { "item": "surgical_kit", "weight": 5, "min": 1, "max": 1 },
+      { "item": "grenade", "weight": 5, "min": 1, "max": 2 },
+      { "item": "ammo_rifle", "weight": 12, "min": 2, "max": 5 },
+      { "item": "ammo_sniper", "weight": 7, "min": 1, "max": 3 },
+      { "item": "backpack_military", "weight": 4, "min": 1, "max": 1 },
+      { "item": "gold_watch", "weight": 4, "min": 1, "max": 1 },
+      { "item": "jewelry", "weight": 3, "min": 1, "max": 1 },
+      { "item": "gasmask", "weight": 3, "min": 1, "max": 1 }
+    ],
+    "vehicle": [
+      { "item": "jerrycan", "weight": 14, "min": 1, "max": 1 },
+      { "item": "repair_kit", "weight": 10, "min": 1, "max": 1 },
+      { "item": "scrap", "weight": 14, "min": 1, "max": 4 },
+      { "item": "duct_tape", "weight": 10, "min": 1, "max": 2 },
+      { "item": "flashlight", "weight": 8, "min": 1, "max": 1 },
+      { "item": "rope", "weight": 6, "min": 1, "max": 1 },
+      { "item": "water_bottle", "weight": 6, "min": 1, "max": 1 }
+    ],
+    "zombie_common": [
+      { "item": "rags", "weight": 20, "min": 1, "max": 3 },
+      { "item": "bandage", "weight": 10, "min": 1, "max": 2 },
+      { "item": "painkiller", "weight": 8, "min": 1, "max": 2 },
+      { "item": "canned_food", "weight": 7, "min": 1, "max": 1 },
+      { "item": "scrap", "weight": 8, "min": 1, "max": 2 },
+      { "item": "wallet", "weight": 5, "min": 1, "max": 1 },
+      { "item": "empty_bottle", "weight": 6, "min": 1, "max": 2 }
+    ],
+    "zombie_elite": [
+      { "item": "medkit", "weight": 9, "min": 1, "max": 1 },
+      { "item": "ammo_rifle", "weight": 12, "min": 1, "max": 2 },
+      { "item": "ammo_smg", "weight": 10, "min": 1, "max": 2 },
+      { "item": "armor_light", "weight": 6, "min": 1, "max": 1 },
+      { "item": "gold_watch", "weight": 4, "min": 1, "max": 1 },
+      { "item": "jewelry", "weight": 2, "min": 1, "max": 1 },
+      { "item": "backpack_small", "weight": 5, "min": 1, "max": 1 }
+    ],
+    "boss": [
+      { "item": "sniper", "weight": 8, "min": 1, "max": 1 },
+      { "item": "m4", "weight": 10, "min": 1, "max": 1 },
+      { "item": "armor_military", "weight": 10, "min": 1, "max": 1 },
+      { "item": "backpack_military", "weight": 8, "min": 1, "max": 1 },
+      { "item": "jewelry", "weight": 10, "min": 1, "max": 2 },
+      { "item": "surgical_kit", "weight": 8, "min": 1, "max": 1 },
+      { "item": "ammo_rifle", "weight": 14, "min": 3, "max": 6 },
+      { "item": "grenade", "weight": 8, "min": 1, "max": 2 }
+    ]
+  }
+}

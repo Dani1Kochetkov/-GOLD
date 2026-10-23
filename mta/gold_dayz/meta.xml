@@ -1,0 +1,44 @@
+<meta>
+  <info
+    author="GOLD DAYZ"
+    name="GOLD DAYZ"
+    description="DayZ-выживание для MTA:SA: зомби и мутанты, лут, крафт, торговцы, базы, транспорт и PvP."
+    type="gamemode"
+    version="1.0.0"
+    gamemodes="gold_dayz" />
+
+  <min_mta_version client="1.6.0" server="1.6.0" />
+
+  <!-- shared: одинаковый код на сервере и клиенте -->
+  <script src="shared/core.lua" type="shared" cache="false" />
+  <script src="shared/inventory.lua" type="shared" cache="false" />
+  <script src="shared/survival.lua" type="shared" cache="false" />
+  <script src="shared/zombie_ai.lua" type="shared" cache="false" />
+  <script src="shared/loot.lua" type="shared" cache="false" />
+
+  <!-- server: данные, потом сервисы, main — последним -->
+  <script src="server/data.lua" type="server" />
+  <script src="server/ui.lua" type="server" />
+  <script src="server/db.lua" type="server" />
+  <script src="server/inventory.lua" type="server" />
+  <script src="server/loot.lua" type="server" />
+  <script src="server/zombies.lua" type="server" />
+  <script src="server/players.lua" type="server" />
+  <script src="server/traders.lua" type="server" />
+  <script src="server/crafting.lua" type="server" />
+  <script src="server/bases.lua" type="server" />
+  <script src="server/vehicles.lua" type="server" />
+  <script src="server/admin.lua" type="server" />
+  <script src="server/main.lua" type="server" />
+
+  <!-- client -->
+  <script src="client/main.lua" type="client" cache="false" />
+  <script src="client/ui.lua" type="client" cache="false" />
+  <script src="client/zombies.lua" type="client" cache="false" />
+  <script src="client/hud.lua" type="client" cache="false" />
+
+  <!-- CEF-интерфейс -->
+  <html src="ui/index.html" default="true" />
+  <file src="ui/style.css" />
+  <file src="ui/app.js" />
+</meta>

@@ -28,3 +28,8 @@ Thumbs.db
 # Готовые сборки
 release/
 dist/
+
+# MTA:SA — рантайм ресурса (база создаётся при запуске)
+mta/gold_dayz/*.db
+mta/gold_dayz/*.db-journal
+mta/node_modules/

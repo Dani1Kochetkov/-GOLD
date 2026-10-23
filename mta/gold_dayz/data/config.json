@@ -1,0 +1,85 @@
+{
+  "meta": { "version": 1, "description": "Настройки GOLD DAYZ MTA. Перезапуск ресурса или /dzreload (только безопасные части)." },
+  "server": {
+    "name": "GOLD DAYZ [RU]",
+    "tickMs": 250,
+    "hudMs": 500,
+    "saveMs": 90000,
+    "weather": 8,
+    "hour": 8,
+    "minute": 0,
+    "minuteDurationMs": 120000,
+    "log": true
+  },
+  "auth": {
+    "enabled": true,
+    "allowRegister": true,
+    "minPassword": 4,
+    "maxNameBytes": 24,
+    "maxAttempts": 5,
+    "lockoutMs": 30000
+  },
+  "spawn": {
+    "money": 500,
+    "invulnMs": 6000,
+    "respawnDelayMs": 8000,
+    "skins": [7, 12, 13, 14, 20, 21, 22, 23, 29, 30, 31],
+    "starter": [
+      { "item": "rags", "count": 2 },
+      { "item": "soda", "count": 1 },
+      { "item": "knife", "count": 1 },
+      { "item": "map", "count": 1 }
+    ]
+  },
+  "survival": {
+    "enabled": true,
+    "bleedingChanceZombie": 0.38,
+    "bleedingChanceBullet": 0.22,
+    "infectionChanceZombie": 0.10,
+    "hungerDrainMultiplier": 1.0
+  },
+  "zombies": {
+    "globalCap": 90,
+    "perPlayerCap": 30,
+    "initialFill": 0.6,
+    "spawnCheckMs": 3000,
+    "minDistance": 25,
+    "maxDistance": 150,
+    "despawnIdleMs": 60000,
+    "bossRespawnMs": 900000,
+    "snapshotMs": 200
+  },
+  "loot": {
+    "groundCap": 380,
+    "topUpMs": 12000,
+    "despawnMs": 900000,
+    "pickupRange": 3.5,
+    "interactRange": 4.0
+  },
+  "vehicles": {
+    "fuelMax": 100,
+    "fuelDrainPerSec": 0.018,
+    "fuelDrainSpeedFactor": 0.0014,
+    "refuel": 35,
+    "respawnMs": 90000
+  },
+  "pvp": true,
+  "safeZones": true,
+  "bases": {
+    "enabled": true,
+    "stashSlots": 40,
+    "claimRange": 6,
+    "interactRange": 6
+  },
+  "traders": {
+    "enabled": true,
+    "interactRange": 4,
+    "sellMultiplier": 0.45,
+    "restockMs": 600000
+  },
+  "admin": {
+    "accounts": [ "owner" ],
+    "aclGroup": "Admin"
+  },
+  "logging": true
+}

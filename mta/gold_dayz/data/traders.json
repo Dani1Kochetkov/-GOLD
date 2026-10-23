@@ -1,0 +1,78 @@
+{
+  "meta": { "version": 1, "description": "Торговцы в безопасных лагерях. Цены в игровых долларах, sellMultiplier — доля цены предмета при продаже." },
+  "sellMultiplier": 0.45,
+  "traders": [
+    {
+      "id": "trader_ls", "name": "Скупщик Юнион", "x": 1700.0, "y": -1950.0, "z": 13.5, "rot": 180, "skin": 147,
+      "stock": [
+        { "item": "bandage", "price": 35, "stock": 30 },
+        { "item": "rags", "price": 10, "stock": 40 },
+        { "item": "painkiller", "price": 25, "stock": 20 },
+        { "item": "medkit", "price": 190, "stock": 8 },
+        { "item": "water_bottle", "price": 30, "stock": 25 },
+        { "item": "canned_food", "price": 45, "stock": 25 },
+        { "item": "ammo_pistol", "price": 50, "stock": 20 },
+        { "item": "ammo_rifle", "price": 90, "stock": 15 },
+        { "item": "knife", "price": 90, "stock": 5 },
+        { "item": "pistol", "price": 450, "stock": 3 },
+        { "item": "shotgun", "price": 950, "stock": 2 },
+        { "item": "backpack_small", "price": 320, "stock": 3 },
+        { "item": "map", "price": 60, "stock": 5 },
+        { "item": "flashlight", "price": 100, "stock": 5 },
+        { "item": "jerrycan", "price": 200, "stock": 6 },
+        { "item": "repair_kit", "price": 260, "stock": 5 }
+      ]
+    },
+    {
+      "id": "trader_sf", "name": "Механик Доэрти", "x": -1980.0, "y": 300.0, "z": 35.2, "rot": 90, "skin": 209,
+      "stock": [
+        { "item": "bandage", "price": 35, "stock": 25 },
+        { "item": "medkit", "price": 190, "stock": 8 },
+        { "item": "antibiotics", "price": 240, "stock": 4 },
+        { "item": "gasmask", "price": 450, "stock": 3 },
+        { "item": "jerrycan", "price": 180, "stock": 10 },
+        { "item": "repair_kit", "price": 230, "stock": 10 },
+        { "item": "scrap", "price": 15, "stock": 30 },
+        { "item": "duct_tape", "price": 20, "stock": 30 },
+        { "item": "armor_light", "price": 480, "stock": 3 },
+        { "item": "backpack_large", "price": 1000, "stock": 2 },
+        { "item": "ammo_shotgun", "price": 45, "stock": 15 },
+        { "item": "sawnoff", "price": 700, "stock": 2 },
+        { "item": "compass", "price": 160, "stock": 3 }
+      ]
+    },
+    {
+      "id": "trader_lv", "name": "Дилер Стрипа", "x": 2020.0, "y": 1010.0, "z": 10.8, "rot": 270, "skin": 171,
+      "stock": [
+        { "item": "bandage", "price": 40, "stock": 20 },
+        { "item": "medkit", "price": 210, "stock": 6 },
+        { "item": "vodka", "price": 60, "stock": 15 },
+        { "item": "soda", "price": 25, "stock": 20 },
+        { "item": "ammo_pistol", "price": 55, "stock": 20 },
+        { "item": "ammo_smg", "price": 65, "stock": 15 },
+        { "item": "ammo_rifle", "price": 95, "stock": 12 },
+        { "item": "deagle", "price": 1100, "stock": 2 },
+        { "item": "mp5", "price": 900, "stock": 2 },
+        { "item": "armor_heavy", "price": 1300, "stock": 2 },
+        { "item": "backpack_military", "price": 2400, "stock": 1 },
+        { "item": "grenade", "price": 420, "stock": 4 }
+      ]
+    },
+    {
+      "id": "trader_fort", "name": "Старьёвщик Карсона", "x": -215.0, "y": 1210.0, "z": 19.7, "rot": 0, "skin": 157,
+      "stock": [
+        { "item": "rags", "price": 8, "stock": 50 },
+        { "item": "bandage", "price": 30, "stock": 25 },
+        { "item": "canned_food", "price": 40, "stock": 20 },
+        { "item": "water_bottle", "price": 25, "stock": 20 },
+        { "item": "wood", "price": 12, "stock": 20 },
+        { "item": "scrap", "price": 12, "stock": 30 },
+        { "item": "rope", "price": 25, "stock": 10 },
+        { "item": "ammo_rifle", "price": 85, "stock": 10 },
+        { "item": "rifle", "price": 1150, "stock": 2 },
+        { "item": "katana", "price": 520, "stock": 2 },
+        { "item": "map", "price": 50, "stock": 5 }
+      ]
+    }
+  ]
+}
