@@ -7,8 +7,11 @@
 
 const UI = require('./ui');
 const Zombies = require('./zombies');
+const Guards = require('./guards');
 const Combat = require('./combat');
 const World = require('./world');
+const Loot = require('./loot');
+const Bases = require('./bases');
 const { sanitizeText } = require('../shared/netcode');
 
 const state = {
@@ -86,6 +89,21 @@ function handleUIAction(action) {
     case 'radio':
       mp.events.callRemote('gold:radio', sanitizeText(action.text, 140));
       break;
+    case 'baseClaim':
+      sendBaseAction(action.base, 'claim');
+      break;
+    case 'baseUnclaim':
+      sendBaseAction(action.base, 'unclaim');
+      break;
+    case 'baseGate':
+      sendBaseAction(action.base, 'gate');
+      break;
+    case 'baseCode':
+      sendBaseAction(action.base, 'code', sanitizeText(action.code, 8));
+      break;
+    case 'entrySubmit':
+      sendEntrySubmit(action.data);
+      break;
     default:
       break;
   }
@@ -93,6 +111,16 @@ function handleUIAction(action) {
 
 function sendInventoryAction(action) {
   mp.events.callRemote('gold:inv', JSON.stringify(action));
+}
+
+function sendBaseAction(baseId, act, code) {
+  const payload = { base: String(baseId || ''), act: String(act || '') };
+  if (code) payload.code = String(code);
+  mp.events.callRemote('gold:base', JSON.stringify(payload));
+}
+
+function sendEntrySubmit(payload) {
+  mp.events.callRemote('gold:entrySubmit', JSON.stringify(payload));
 }
 
 // ------------------------------------------------------------------ панели
@@ -154,12 +182,14 @@ on('gold:catalog', (payload) => {
 
 on('gold:map', (payload) => {
   state.map = JSON.parse(payload);
+  if (state.map && state.map.baseZones) Bases.applyMap(state.map.baseZones);
   post({ t: 'map', data: state.map });
 });
 
 on('gold:welcome', (payload) => {
   state.welcome = JSON.parse(payload);
   Zombies.setTypes(state.welcome.zombies || []);
+  Guards.setTypes(state.welcome.guards || []);
   World.applyWelcome(state.welcome);
   post({ t: 'welcome', data: state.welcome });
 });
@@ -188,7 +218,45 @@ on('gold:chat', (text) => {
 });
 
 on('gold:zombies', (payload) => {
-  Zombies.applySnapshot(payload);
+  let combined = null;
+  try {
+    combined = typeof payload === 'string' ? JSON.parse(payload) : payload;
+  } catch (err) {
+    return;
+  }
+  if (!combined) return;
+  // Сервер отправляет объединенный снапшот {t, z, g}: z — зомби, g — охрана.
+  if (Array.isArray(combined.g)) {
+    if (Array.isArray(combined.z)) Zombies.applySnapshot(JSON.stringify({ z: combined.z }));
+    Guards.applySnapshot(JSON.stringify({ z: combined.g }));
+  } else {
+    Zombies.applySnapshot(payload);
+  }
+});
+
+on('gold:guards', (payload) => {
+  Guards.applySnapshot(payload);
+});
+
+on('gold:guardKilled', (payload) => {
+  Guards.onKilled(payload);
+});
+
+on('gold:lootSpawn', (payload) => {
+  Loot.onSpawn(payload);
+});
+
+on('gold:lootRemove', (payload) => {
+  Loot.onRemove(payload);
+});
+
+on('gold:baseUpdate', (payload) => {
+  Bases.applyUpdate(payload);
+  try {
+    post({ t: 'baseUpdate', data: JSON.parse(payload) });
+  } catch (err) {
+    // ignore
+  }
 });
 
 on('gold:zombieKilled', (payload) => {
@@ -305,6 +373,45 @@ on('gold:ui', (payload) => {
   else closePanel();
 });
 
+// ------------------------------------------------------------------ вход (System 4)
+
+on('gold:entry', (payload) => {
+  let data = null;
+  try {
+    data = JSON.parse(payload);
+  } catch (err) {
+    return;
+  }
+  if (!data) return;
+  post({
+    t: 'entry',
+    data,
+    action: (data.required === false || !data.required) ? 'play' : 'login'
+  });
+});
+
+on('gold:entryOk', (payload) => {
+  let data = null;
+  try {
+    data = JSON.parse(payload);
+  } catch (err) {
+    data = {};
+  }
+  post({ t: 'entryOk', data: data || {} });
+  UI.toast(data && data.name ? `Добро пожаловать, ${data.name}` : 'Добро пожаловать', 'success');
+});
+
+on('gold:entryFail', (payload) => {
+  let data = null;
+  try {
+    data = JSON.parse(payload);
+  } catch (err) {
+    data = {};
+  }
+  post({ t: 'entryFail', data: data || {} });
+  UI.toast((data && data.reason) || 'Вход невозможен', 'warning');
+});
+
 // ------------------------------------------------------------------ управление
 
 function bindKey(code, handler) {
@@ -331,6 +438,14 @@ bindKey(KEY.ESC, () => {
 });
 bindKey(KEY.E, () => {
   if (state.dead || state.panel) return;
+  const local = mp.players.local;
+  if (!local) return;
+  const near = Bases.nearBase(local.position, 6);
+  if (near) {
+    // Рядом база: открываем панель управления базой (CEF).
+    post({ t: 'basePanel', base: near.id, name: near.name, owner: near.owner });
+    return;
+  }
   mp.events.callRemote('gold:interact', JSON.stringify({}));
 });
 bindKey(KEY.R, () => {
@@ -365,6 +480,9 @@ mp.events.add('render', () => {
   try {
     Combat.forceBlocked = !!state.panel;
     Zombies.update();
+    Guards.update();
+    Loot.update();
+    Bases.update();
     World.update();
     Combat.update();
   } catch (err) {

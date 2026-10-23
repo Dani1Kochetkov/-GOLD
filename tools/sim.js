@@ -113,7 +113,7 @@ async function main() {
   const players = [];
   for (let i = 0; i < args.players; i += 1) {
     const id = 100 + i;
-    const player = game.addPlayer({ id, name: `Sim_${i + 1}` });
+    const player = game.addPlayer({ id, name: `Sim_${i + 1}`, authenticated: true });
     if (!player) continue;
     const pos = {
       x: center.x + rng.float(-25, 25),

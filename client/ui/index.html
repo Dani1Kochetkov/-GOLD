@@ -160,6 +160,49 @@
       </div>
     </section>
 
+    <!-- ================= ENTRY ================= -->
+    <section id="entry" class="overlay hidden">
+      <div class="entry-card">
+        <h1>GOLD DAYZ</h1>
+        <p class="entry-sub">Вход в мир выживания</p>
+        <div id="entry-tabs">
+          <button class="tab active" data-entry-tab="login">Вход</button>
+          <button class="tab" data-entry-tab="register" id="entry-register-tab">Регистрация</button>
+        </div>
+        <div id="entry-error" class="entry-error hidden"></div>
+        <label>Логин<input id="entry-login" type="text" maxlength="24" autocomplete="username" placeholder="введите логин" /></label>
+        <label>Пароль<input id="entry-pass" type="password" maxlength="64" autocomplete="current-password" placeholder="введите пароль" /></label>
+        <label>Имя персонажа<input id="entry-char" type="text" maxlength="24" placeholder="как вас звать" /></label>
+        <label>Точка появления<select id="entry-spawn"></select></label>
+        <button class="primary-btn" id="entry-submit" data-entry-submit="login">ВОЙТИ</button>
+        <p class="entry-hint">Пароль: min 6 символов. Персонаж выбирается разово.</p>
+      </div>
+    </section>
+
+    <!-- ================= BASE ================= -->
+    <section id="base" class="panel hidden" aria-label="База выживших">
+      <div class="panel-inner">
+        <header class="panel-header">
+          <div>
+            <h1>БАЗА ВЫЖИВШИХ</h1>
+            <p id="base-name">—</p>
+          </div>
+          <button class="close-btn" data-action="close">✕</button>
+        </header>
+        <div class="base-body">
+          <div id="base-owner" class="base-owner"></div>
+          <div id="base-gate" class="base-gate"></div>
+          <div class="base-actions">
+            <button class="primary-btn" id="base-claim" data-base-act="claim">Занять базу</button>
+            <button class="ghost-btn" id="base-gate-btn" data-base-act="gate">Ворота</button>
+            <button class="ghost-btn" id="base-unclaim" data-base-act="unclaim">Освободить</button>
+            <button class="ghost-btn" id="base-code-btn" data-base-act="code">Пин-код</button>
+          </div>
+          <div id="base-hint" class="base-hint"></div>
+        </div>
+      </div>
+    </section>
+
     <div id="loading" class="loading">GOLD DAYZ<span>загрузка интерфейса…</span></div>
     <div id="debug-line" class="debug-line"></div>
   </div>

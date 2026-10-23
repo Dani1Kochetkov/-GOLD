@@ -69,7 +69,30 @@
     "pickupRange": 3.0,
     "interactRange": 3.0,
     "maxGroundItems": 900,
-    "zombieLootChance": 0.45
+    "zombieLootChance": 0.45,
+    "tiers": {
+      "1": {
+        "name": "Гражданская",
+        "spawnChance": 0.9,
+        "respawnMs": 120000,
+        "topUpMs": 20000,
+        "tables": ["civilian", "food", "medical", "industrial"]
+      },
+      "2": {
+        "name": "Военная",
+        "spawnChance": 0.6,
+        "respawnMs": 210000,
+        "topUpMs": 25000,
+        "tables": ["police", "military"]
+      },
+      "3": {
+        "name": "ТОП-Зона",
+        "spawnChance": 0.3,
+        "respawnMs": 300000,
+        "topUpMs": 45000,
+        "tables": ["military", "top"]
+      }
+    }
   },
   "inventory": {
     "persist": true,
@@ -82,6 +105,49 @@
     "enabled": true,
     "directory": "storage/players",
     "saveOnDisconnect": true
+  },
+  "guards": {
+    "enabled": true,
+    "model": "S_M_Y_Marine_01",
+    "health": 200,
+    "armor": 100,
+    "weapon": "carbinerifle",
+    "patrolRadius": 50,
+    "aggroRange": 40,
+    "attackRange": 45,
+    "attackRateMs": 900,
+    "globalCap": 40,
+    "perZone": 3,
+    "spawnIntervalMs": 8000,
+    "corpseTtlMs": 60000,
+    "despawnDistance": 420,
+    "minSpawnDistanceFromPlayers": 20,
+    "tier3Only": true
+  },
+  "bases": {
+    "enabled": true,
+    "interactRange": 6.0,
+    "safeRadius": 22,
+    "gateRadius": 4.0,
+    "maxBases": 8
+  },
+  "auth": {
+    "enabled": true,
+    "accountsFile": "storage/accounts.json",
+    "allowRegister": true,
+    "passwordMinLength": 6,
+    "maxLoginAttempts": 5,
+    "lockoutMs": 15000
+  },
+  "db": {
+    "enabled": false,
+    "host": "127.0.0.1",
+    "port": 3306,
+    "user": "root",
+    "password": "GoldDayz1!",
+    "database": "gold_dayz",
+    "accountsTable": "accounts",
+    "note": "MySQL для аккаунтов. По умолчанию auth использует JSON (storage/accounts.json). Включить db.enabled=true после настройки MySQL."
   },
   "access": {
     "whitelistEnabled": false,

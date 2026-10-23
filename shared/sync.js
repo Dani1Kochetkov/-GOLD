@@ -14,6 +14,10 @@ const V = require('./vec3');
 const STATE_CODES = { idle: 0, wander: 1, investigate: 2, chase: 3, attack: 4, dead: 5 };
 const STATE_NAMES = ['idle', 'wander', 'investigate', 'chase', 'attack', 'dead'];
 
+// Охрана ТОП-зон: свои состояния, но тот же формат снапшота.
+const GUARD_STATE_CODES = { idle: 0, patrol: 1, aggro: 2, attack: 3, return: 4, dead: 5 };
+const GUARD_STATE_NAMES = ['idle', 'patrol', 'aggro', 'attack', 'return', 'dead'];
+
 function stateCode(state) {
   const code = STATE_CODES[state];
   return typeof code === 'number' ? code : 0;
@@ -102,6 +106,81 @@ function buildSnapshot(zombies, opts) {
 
 function packSnapshot(snapshot) {
   return JSON.stringify({ t: snapshot.now, z: snapshot.entries });
+}
+
+function guardStateCode(state) {
+  const code = GUARD_STATE_CODES[state];
+  return typeof code === 'number' ? code : 0;
+}
+
+function guardToEntry(guard) {
+  return [
+    guard.id,
+    round(guard.pos.x, 2),
+    round(guard.pos.y, 2),
+    round(guard.pos.z, 2),
+    Math.round(((guard.heading || 0) % 360) * 10) / 10,
+    guardStateCode(guard.state),
+    Math.max(0, Math.min(100, Math.round((guard.health / (guard.maxHealth || 1)) * 100))),
+    Number(guard.typeCode) || 0
+  ];
+}
+
+/** Снапшот охраны ТОП-зон (ту же структуру, что у зомби). */
+function buildGuardSnapshot(guards, opts) {
+  const options = opts || {};
+  const radius = Number(options.radius) || SYNC.SNAPSHOT_RADIUS;
+  const maxEntities = Math.max(1, Math.min(SYNC.SNAPSHOT_MAX_ZOMBIES, Number(options.maxEntities) || SYNC.SNAPSHOT_MAX_ZOMBIES));
+  const maxBytes = Math.max(512, Number(options.maxBytes) || SYNC.MAX_PAYLOAD_BYTES);
+  const origin = options.position || { x: 0, y: 0, z: 0 };
+  const dimension = options.dimension || 0;
+
+  const candidates = [];
+  for (let i = 0; i < guards.length; i += 1) {
+    const guard = guards[i];
+    if (!guard || !guard.alive) continue;
+    if ((guard.dimension || 0) !== dimension) continue;
+    const dist = V.distance(origin, guard.pos);
+    if (dist > radius) continue;
+    candidates.push({ guard, dist });
+  }
+  candidates.sort((a, b) => a.dist - b.dist);
+
+  const entries = [];
+  let bytes = 32;
+  let dropped = 0;
+  for (let i = 0; i < candidates.length; i += 1) {
+    if (entries.length >= maxEntities) {
+      dropped = candidates.length - entries.length;
+      break;
+    }
+    const entry = guardToEntry(candidates[i].guard);
+    const size = JSON.stringify(entry).length + 1;
+    if (bytes + size > maxBytes) {
+      dropped = candidates.length - entries.length;
+      break;
+    }
+    entries.push(entry);
+    bytes += size;
+  }
+
+  return {
+    entries,
+    count: entries.length,
+    bytes,
+    dropped,
+    total: candidates.length,
+    now: Number(options.now) || Date.now()
+  };
+}
+
+/** Собирает один payload снапшота: зомби + охрана. */
+function packCombinedSnapshot(zombieSnapshot, guardSnapshot) {
+  return JSON.stringify({
+    t: (guardSnapshot && guardSnapshot.now) || (zombieSnapshot && zombieSnapshot.now) || Date.now(),
+    z: (zombieSnapshot && zombieSnapshot.entries) || [],
+    g: (guardSnapshot && guardSnapshot.entries) || []
+  });
 }
 
 function unpackSnapshot(payload) {
@@ -212,12 +291,17 @@ function pruneClientState(state, now, ttlMs) {
 module.exports = {
   STATE_CODES,
   STATE_NAMES,
+  GUARD_STATE_CODES,
+  GUARD_STATE_NAMES,
   stateCode,
   stateName,
+  guardStateCode,
   chooseInterval,
   toEntry,
   buildSnapshot,
+  buildGuardSnapshot,
   packSnapshot,
+  packCombinedSnapshot,
   unpackSnapshot,
   createClientState,
   applySnapshot,

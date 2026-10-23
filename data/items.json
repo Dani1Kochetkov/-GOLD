@@ -51,6 +51,22 @@
       }
     },
     {
+      "id": "surgical_kit",
+      "name": "Хирургический набор",
+      "desc": "Редкая медицина: лечит и кровь, и здоровье полностью.",
+      "slot": "none",
+      "weight": 0.8,
+      "stack": 2,
+      "rarity": "rare",
+      "icon": "🧰",
+      "usable": true,
+      "heal": {
+        "health": 80,
+        "blood": 80,
+        "time": 5000
+      }
+    },
+    {
       "id": "painkiller",
       "name": "Обезболивающее",
       "desc": "Снимает тряску и боль, немного восстанавливает здоровье.",
@@ -303,6 +319,86 @@
       }
     },
     {
+      "id": "assaultrifle",
+      "name": "Автомат (АК)",
+      "desc": "Стандартное штурмовое оружие военных и мародёров.",
+      "slot": "primary",
+      "weight": 3.6,
+      "stack": 1,
+      "rarity": "epic",
+      "icon": "🔫",
+      "equipable": true,
+      "weapon": {
+        "hash": 3220176749,
+        "damage": 30,
+        "range": 80,
+        "rate": 130,
+        "ammoType": "ammo_762",
+        "mag": 30,
+        "noise": 180
+      }
+    },
+    {
+      "id": "heavysniper",
+      "name": "Тяжёлый снайпер",
+      "desc": "ТОП-лут. Убивает с одного выстрела на огромной дистанции.",
+      "slot": "primary",
+      "weight": 5.8,
+      "stack": 1,
+      "rarity": "legendary",
+      "icon": "🎯",
+      "equipable": true,
+      "weapon": {
+        "hash": 205991906,
+        "damage": 220,
+        "range": 320,
+        "rate": 1500,
+        "ammoType": "ammo_762",
+        "mag": 7,
+        "noise": 300
+      }
+    },
+    {
+      "id": "heavymg",
+      "name": "Тяжёлый пулемёт",
+      "desc": "ТОП-лут. Огненный поток на коротких дистанциях.",
+      "slot": "primary",
+      "weight": 6.5,
+      "stack": 1,
+      "rarity": "legendary",
+      "icon": "🔫",
+      "equipable": true,
+      "weapon": {
+        "hash": 2634544996,
+        "damage": 26,
+        "range": 130,
+        "rate": 100,
+        "ammoType": "ammo_762",
+        "mag": 100,
+        "noise": 200
+      }
+    },
+    {
+      "id": "marksmanrifle",
+      "name": "Снайперка марксмен",
+      "desc": "Точная винтовка с оптическим прицелом.",
+      "slot": "primary",
+      "weight": 4.8,
+      "stack": 1,
+      "rarity": "epic",
+      "icon": "🎯",
+      "equipable": true,
+      "weapon": {
+        "hash": 3342088282,
+        "damage": 95,
+        "range": 210,
+        "rate": 900,
+        "ammoType": "ammo_762",
+        "mag": 10,
+        "noise": 240
+      }
+    },
+    {
       "id": "ammo_9mm",
       "name": "Патроны 9 мм",
       "desc": "Для пистолета и ПП.",
@@ -370,6 +466,19 @@
       "equipable": true,
       "storage": 12,
       "damageReduction": 0.15
+    },
+    {
+      "id": "armor3",
+      "name": "Броня 3-го уровня",
+      "desc": "ТОП-лут. Сильная броня от пуль — до -60% урона.",
+      "slot": "armor",
+      "weight": 0.0,
+      "stack": 1,
+      "rarity": "legendary",
+      "icon": "🛡️",
+      "equipable": true,
+      "storage": 10,
+      "damageReduction": 0.6
     },
     {
       "id": "gas_mask",

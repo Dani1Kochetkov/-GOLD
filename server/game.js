@@ -21,8 +21,11 @@ const { Rng } = require('../shared/rng');
 const INV = require('../shared/inventory');
 const SURVIVAL_MOD = require('../shared/survival');
 const AI = require('../shared/zombie-ai');
+const GUARDS = require('../shared/guards');
+const BASES = require('../shared/bases');
+const LOOT = require('../shared/loot');
 const SYNC = require('../shared/sync');
-const { SURVIVAL, ZOMBIE, RATE, ITEM_SLOTS, INVENTORY } = require('../shared/constants');
+const { SURVIVAL, ZOMBIE, GUARD, BASE, RATE, ITEM_SLOTS, INVENTORY } = require('../shared/constants');
 const { RateLimiter, sanitizeText, safeJsonParse, byteLength } = require('../shared/netcode');
 const { chunkByBytes } = require('../shared/chunk');
 
@@ -38,7 +41,11 @@ const EVENTS = {
   DAMAGE: 'gold:damage',
   HIT: 'gold:hit',
   ZOMBIES: 'gold:zombies',
+  GUARDS: 'gold:guards',
   ZOMBIE_KILLED: 'gold:zombieKilled',
+  GUARD_KILLED: 'gold:guardKilled',
+  LOOT_SPAWN: 'gold:lootSpawn',
+  LOOT_REMOVE: 'gold:lootRemove',
   SCREAM: 'gold:scream',
   SHOT: 'gold:shot',
   MELEE: 'gold:melee',
@@ -49,7 +56,12 @@ const EVENTS = {
   RADIO: 'gold:radio',
   TELEPORT: 'gold:teleport',
   STATS: 'gold:stats',
-  WELCOME: 'gold:welcome'
+  WELCOME: 'gold:welcome',
+  ENTRY: 'gold:entry',
+  ENTRY_SUBMIT: 'gold:entrySubmit',
+  ENTRY_OK: 'gold:entryOk',
+  ENTRY_FAIL: 'gold:entryFail',
+  BASE_UPDATE: 'gold:baseUpdate'
 };
 
 function segmentDistance(point, a, b) {
@@ -88,17 +100,29 @@ class Game {
     this.players = new Map();
     this.zombies = [];
     this.zombieById = new Map();
+    this.guards = [];
+    this.guardById = new Map();
+    this.bases = [];
+    this.baseById = new Map();
     this.groundItems = [];
     this.noiseEvents = [];
     this.limiter = new RateLimiter();
-    this.counters = { zombie: 0, item: 0, noise: 0 };
+    this.counters = { zombie: 0, item: 0, noise: 0, guard: 0 };
     this.nextSpawnAt = 0;
     this.nextLootTopUpAt = 0;
     this.nextPersistAt = 0;
+    this.nextGuardSpawnAt = 0;
+    this.rootDir = opts.rootDir || null;
+    this.accountsLoaded = false;
+    this.accounts = {};
 
     this.zombieTypeCodes = new Map();
     for (let i = 0; i < this.data.zombieTypes.length; i += 1) {
       this.zombieTypeCodes.set(this.data.zombieTypes[i].id, i);
+    }
+    this.guardTypeCodes = new Map();
+    for (let i = 0; i < this.data.guardTypes.length; i += 1) {
+      this.guardTypeCodes.set(this.data.guardTypes[i].id, i);
     }
 
     this.zones = {
@@ -113,9 +137,19 @@ class Game {
       this.zoneRuntime.set(zone.id, {
         zone,
         itemIds: [],
-        nextTopUpAt: 0
+        nextTopUpAt: 0,
+        pendingRespawn: 0,
+        nextRespawnAt: 0
       });
     }
+
+    this.tiers = LOOT.tiers(this.config);
+    this.guardConfig = this.config.guards || {};
+    this.baseConfig = this.config.bases || {};
+    this.authConfig = this.config.auth || {};
+    this.lootModels = this.data.lootModels || {};
+
+    this.initBases();
 
     this.metrics = {
       ticks: 0,
@@ -125,6 +159,8 @@ class Game {
       snapshotBytes: 0,
       zombiesSpawned: 0,
       zombiesKilled: 0,
+      guardsSpawned: 0,
+      guardsKilled: 0,
       playerDeaths: 0,
       shots: 0,
       hits: 0,
@@ -191,6 +227,75 @@ class Game {
     return null;
   }
 
+  // ---------------------------------------------------------------- базы (System 3)
+
+  initBases() {
+    this.bases = [];
+    this.baseById = new Map();
+    const list = (this.data.map.baseZones || []);
+    for (let i = 0; i < list.length; i += 1) {
+      const base = BASES.createBase({
+        id: list[i].id,
+        name: list[i].name,
+        pos: list[i].pos,
+        radius: Number(list[i].radius) || BASE.DEFAULT_RADIUS,
+        gate: list[i].gate,
+        guarded: !!list[i].guarded
+      });
+      this.bases.push(base);
+      this.baseById.set(base.id, base);
+    }
+  }
+
+  findBaseAt(pos) {
+    let best = null;
+    let bestDist = Infinity;
+    for (let i = 0; i < this.bases.length; i += 1) {
+      const base = this.bases[i];
+      const dist = BASES.distanceToBase(base, pos);
+      if (dist <= base.radius + BASE.SAFE_PAD && dist < bestDist) {
+        best = base;
+        bestDist = dist;
+      }
+    }
+    return best;
+  }
+
+  findNearestBase(pos, maxDist) {
+    let best = null;
+    let bestDist = maxDist === undefined ? Infinity : maxDist;
+    for (let i = 0; i < this.bases.length; i += 1) {
+      const base = this.bases[i];
+      const dist = V.distance(pos, base.pos);
+      if (dist <= bestDist) {
+        best = base;
+        bestDist = dist;
+      }
+    }
+    return best;
+  }
+
+  findGateAt(pos) {
+    let best = null;
+    let bestDist = Infinity;
+    for (let i = 0; i < this.bases.length; i += 1) {
+      const base = this.bases[i];
+      const dist = V.distance(pos, base.gate.pos);
+      if (dist <= base.gate.radius + 1.5 && dist < bestDist) {
+        best = base;
+        bestDist = dist;
+      }
+    }
+    return best;
+  }
+
+  isSafeForPlayer(player) {
+    if (!player) return false;
+    if (player.godMode) return true;
+    if (player.safeZoneId) return true;
+    return !!player.baseId;
+  }
+
   // ---------------------------------------------------------------- игроки
 
   createPlayerRecord(id, name) {
@@ -203,7 +308,7 @@ class Game {
       dimension: 0,
       stats: SURVIVAL_MOD.createStats(),
       inventory: INV.createInventory(`player:${id}`, INVENTORY.BASE_SLOTS),
-      kills: { zombies: 0, players: 0 },
+      kills: { zombies: 0, players: 0, guards: 0 },
       deaths: 0,
       score: 0,
       joinedAt: this.lastTickAt,
@@ -223,8 +328,15 @@ class Game {
       invulnerableUntil: 0,
       respawnAt: 0,
       safeZoneId: null,
+      baseId: null,
       godMode: false,
-      lastChatAt: 0
+      lastChatAt: 0,
+      // Система входа (System 4: логин/пароль + выбор спавна).
+      authenticated: false,
+      pendingEntry: false,
+      authAttempts: 0,
+      authLockedUntil: 0,
+      selectedSpawn: null
     };
   }
 
@@ -236,15 +348,38 @@ class Game {
 
     const name = sanitizeText(opts.name || `Survivor_${id}`, 24) || `Survivor_${id}`;
     const player = this.createPlayerRecord(id, name);
+    player.authenticated = !this.authConfig.enabled || opts.authenticated === true;
+    this.players.set(id, player);
 
-    const profile = this.store && this.config.persistence.enabled ? this.store.load(name) : null;
+    // Система входа: если требуется логин, ждем ENTRY_SUBMIT, спавн не делаем.
+    if (this.authConfig.enabled && !player.authenticated) {
+      player.pendingEntry = true;
+      this.sendEntry(player);
+      this.log('info', `[game] + ${name} (id ${id}) ожидает вход`);
+      return player;
+    }
+
+    this.setupPlayer(player, { loadProfile: true });
+    return player;
+  }
+
+  /** Полная инициализация спавна: профиль, позиция, каталог, приветствие. */
+  setupPlayer(player, options) {
+    const opts = options || {};
     const now = this.lastTickAt;
+    const name = player.name;
+
+    const profile = opts.loadProfile !== false && this.store && this.config.persistence.enabled ? this.store.load(name) : null;
     if (profile && profile.stats) {
       player.inventory = INV.sanitizeInventory(profile.inventory, this.data.itemsIndex, INVENTORY.BASE_SLOTS);
       const stats = SURVIVAL_MOD.createStats(profile.stats);
       stats.alive = profile.stats.alive !== false;
       player.stats = stats;
-      if (profile.kills) player.kills = { zombies: Number(profile.kills.zombies) || 0, players: Number(profile.kills.players) || 0 };
+      if (profile.kills) player.kills = {
+        zombies: Number(profile.kills.zombies) || 0,
+        players: Number(profile.kills.players) || 0,
+        guards: Number(profile.kills.guards) || 0
+      };
       player.deaths = Number(profile.deaths) || 0;
       player.score = Number(profile.score) || 0;
       player.playtimeMs = Number(profile.playtimeMs) || 0;
@@ -256,23 +391,29 @@ class Game {
 
     if (!player.stats.alive) {
       player.stats = SURVIVAL_MOD.createStats();
-      player.inventory = INV.createInventory(`player:${id}`, INVENTORY.BASE_SLOTS);
+      player.inventory = INV.createInventory(`player:${player.id}`, INVENTORY.BASE_SLOTS);
       this.giveStarterKit(player);
     }
 
     if (!player.pos || (!player.pos.x && !player.pos.y && !player.pos.z)) {
-      player.pos = this.findSpawnPosition();
+      player.pos = this.findSpawnPosition(player.selectedSpawn);
     }
 
     player.invulnerableUntil = now + (Number(this.config.spawn.invulnerableAfterSpawnMs) || 0);
     player.positionGraceUntil = now + 3000;
-    this.players.set(id, player);
 
     this.sendCatalog(player);
     this.sendMap(player);
     this.sendInventory(player);
     this.sendHud(player, now);
-    this.net.send(id, EVENTS.WELCOME, JSON.stringify({
+    this.sendWelcome(player);
+    this.sendToast(player, `GOLD DAYZ: ${player.name}, выживи. Нажми I — инвентарь, M — карта, E — подобрать.`, 'info');
+    this.log('info', `[game] + ${player.name} (id ${player.id}) в ${Math.round(player.pos.x)}, ${Math.round(player.pos.y)}`);
+    return player;
+  }
+
+  sendWelcome(player) {
+    this.net.send(player.id, EVENTS.WELCOME, JSON.stringify({
       name: player.name,
       server: (this.config.server && this.config.server.name) || 'GOLD DAYZ',
       pvp: !!this.config.world.pvp,
@@ -281,11 +422,130 @@ class Game {
       weather: (this.data.map.world && this.data.map.world.weather) || 'OVERCAST',
       zombies: this.data.zombieTypes.map((type, index) => ({
         c: index, m: type.model, t: type.tint || 0, n: type.name
+      })),
+      guards: this.data.guardTypes.map((type, index) => ({
+        c: index, m: type.model, n: type.name
       }))
     }));
-    this.sendToast(player, `GOLD DAYZ: ${player.name}, выживи. Нажми I — инвентарь, M — карта, E — подобрать.`, 'info');
-    this.log('info', `[game] + ${name} (id ${id}) в ${Math.round(player.pos.x)}, ${Math.round(player.pos.y)}`);
-    return player;
+  }
+
+  // ---------------------------------------------------------------- вход (System 4)
+
+  sendEntry(player) {
+    this.net.send(player.id, EVENTS.ENTRY, JSON.stringify({
+      required: true,
+      allowRegister: !!this.authConfig.allowRegister,
+      passwordMinLength: Number(this.authConfig.passwordMinLength) || 6,
+      spawnPoints: (this.data.map.spawnPoints || []).map((point) => ({
+        id: point.id, name: point.name, x: point.pos.x, y: point.pos.y
+      }))
+    }));
+  }
+
+  /** Валидация логина/регистрации. Хранилище — JSON (storage/accounts.json). */
+  loadAccounts() {
+    if (this.accountsLoaded) return this.accounts;
+    this.accountsLoaded = true;
+    this.accounts = {};
+    if (!this.authConfig.enabled) return this.accounts;
+    const file = require('path').join(require('path').resolve(this.rootDir || process.cwd()), this.authConfig.accountsFile || 'storage/accounts.json');
+    try {
+      const fs = require('fs');
+      if (fs.existsSync(file)) {
+        this.accounts = JSON.parse(fs.readFileSync(file, 'utf8')) || {};
+      }
+    } catch (err) {
+      this.log('warn', `[auth] не удалось прочитать ${file}: ${err.message}`);
+      this.accounts = {};
+    }
+    return this.accounts;
+  }
+
+  saveAccounts() {
+    if (!this.authConfig.enabled) return;
+    const fs = require('fs');
+    const path = require('path');
+    const file = path.join(path.resolve(this.rootDir || process.cwd()), this.authConfig.accountsFile || 'storage/accounts.json');
+    try {
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, JSON.stringify(this.accounts, null, 2), 'utf8');
+    } catch (err) {
+      this.log('warn', `[auth] не удалось сохранить ${file}: ${err.message}`);
+    }
+  }
+
+  hashPassword(password, salt) {
+    const crypto = require('crypto');
+    return crypto.scryptSync(String(password), String(salt), 32).toString('hex');
+  }
+
+  /**
+   * @returns {{ok:boolean, reason?:string, username?:string}}
+   */
+  handleEntrySubmit(playerId, raw) {
+    const player = this.players.get(playerId);
+    if (!player) return { ok: false, reason: 'no-player' };
+    const now = this.lastTickAt;
+    if (player.authenticated) return { ok: true };
+    if (player.authLockedUntil && now < player.authLockedUntil) {
+      return { ok: false, reason: 'locked', retryInMs: player.authLockedUntil - now };
+    }
+
+    const payload = typeof raw === 'string' ? safeJsonParse(raw, 1024) : raw;
+    if (!payload || typeof payload !== 'object') return { ok: false, reason: 'bad-request' };
+    const username = sanitizeText(payload.username, 24);
+    const password = typeof payload.password === 'string' ? payload.password : '';
+    const register = !!payload.register;
+    if (!username) return { ok: false, reason: 'no-username' };
+    if (password.length < (Number(this.authConfig.passwordMinLength) || 6)) return { ok: false, reason: 'weak-password' };
+
+    const accounts = this.loadAccounts();
+    const existing = accounts[username];
+    if (register && !existing) {
+      const salt = require('crypto').randomBytes(16).toString('hex');
+      accounts[username] = { salt, hash: this.hashPassword(password, salt), createdAt: now };
+      this.saveAccounts();
+    } else if (!register && !existing) {
+      player.authAttempts = (player.authAttempts || 0) + 1;
+      if (player.authAttempts >= (Number(this.authConfig.maxLoginAttempts) || 5)) {
+        player.authLockedUntil = now + (Number(this.authConfig.lockoutMs) || 15000);
+        player.authAttempts = 0;
+        return { ok: false, reason: 'locked', retryInMs: player.authLockedUntil - now };
+      }
+      return { ok: false, reason: 'no-account' };
+    } else if (existing) {
+      const salt = existing.salt;
+      const hash = this.hashPassword(password, salt);
+      if (hash !== existing.hash) {
+        player.authAttempts = (player.authAttempts || 0) + 1;
+        if (player.authAttempts >= (Number(this.authConfig.maxLoginAttempts) || 5)) {
+          player.authLockedUntil = now + (Number(this.authConfig.lockoutMs) || 15000);
+          player.authAttempts = 0;
+          return { ok: false, reason: 'locked', retryInMs: player.authLockedUntil - now };
+        }
+        return { ok: false, reason: 'bad-password' };
+      }
+    }
+
+    player.authAttempts = 0;
+    player.authLockedUntil = 0;
+    player.authenticated = true;
+    player.pendingEntry = false;
+    player.name = sanitizeText(payload.character, 24) || username;
+    if (payload.spawnPoint && this.findSpawnPoint(payload.spawnPoint)) {
+      player.selectedSpawn = String(payload.spawnPoint);
+    }
+
+    this.setupPlayer(player, { loadProfile: true });
+    return { ok: true, username };
+  }
+
+  findSpawnPoint(id) {
+    const points = this.data.map.spawnPoints || [];
+    for (let i = 0; i < points.length; i += 1) {
+      if (points[i].id === id) return points[i];
+    }
+    return null;
   }
 
   removePlayer(id) {
@@ -309,9 +569,17 @@ class Game {
     }
   }
 
-  findSpawnPosition() {
+  findSpawnPosition(preferredId) {
     const points = this.data.map.spawnPoints || [];
     if (!points.length) return { x: 0, y: 0, z: 72 };
+    // Если игрок выбрал точку спавна — стараемся её использовать.
+    if (preferredId) {
+      const chosen = this.findSpawnPoint(preferredId);
+      if (chosen && this.distanceToPlayer(chosen.pos) >= 8
+        && this.nearestZombieDistance(chosen.pos) >= Number(this.config.spawn.minDistanceFromZombies || 40)) {
+        return V.copy(chosen.pos);
+      }
+    }
     const candidates = this.rng.shuffle(points);
     for (let i = 0; i < candidates.length; i += 1) {
       const point = candidates[i].pos;
@@ -399,8 +667,10 @@ class Game {
       this.tickPlayerSurvival(player, time, dt);
     }
 
+    this.tickBases(time);
     this.tickZombies(time, dt);
     this.tickZombieSpawning(time);
+    this.tickGuards(time, dt);
     this.tickLoot(time);
     this.tickNoise(time);
 
@@ -479,7 +749,7 @@ class Game {
       this.sendHud(player, now);
     }
 
-    // Снапшоты зомби
+    // Снапшоты зомби + охраны ТОП-зон.
     const radius = Number(this.config.zombies.snapshotRadius) || 320;
     let visible = 0;
     for (let i = 0; i < this.zombies.length; i += 1) {
@@ -487,11 +757,17 @@ class Game {
       if (!zombie.alive || zombie.dimension !== player.dimension) continue;
       if (V.distance(player.pos, zombie.pos) <= radius) visible += 1;
     }
-    const interval = SYNC.chooseInterval(this.players.size, visible || player.lastSnapshotCount);
+    let visibleGuards = 0;
+    for (let i = 0; i < this.guards.length; i += 1) {
+      const guard = this.guards[i];
+      if (!guard.alive || guard.dimension !== player.dimension) continue;
+      if (V.distance(player.pos, guard.pos) <= radius) visibleGuards += 1;
+    }
+    const interval = SYNC.chooseInterval(this.players.size, visible || visibleGuards || player.lastSnapshotCount);
     if (now - player.lastSnapshotAt < interval) return;
     player.lastSnapshotAt = now;
 
-    if (!visible && player.lastSnapshotCount === 0) return;
+    if (!visible && !visibleGuards && player.lastSnapshotCount === 0) return;
     const snapshot = SYNC.buildSnapshot(this.zombies, {
       position: player.pos,
       dimension: player.dimension,
@@ -500,14 +776,219 @@ class Game {
       maxEntities: SYNC.SNAPSHOT_MAX_ZOMBIES,
       now
     });
-    player.lastSnapshotCount = snapshot.count;
-    const packed = SYNC.packSnapshot(snapshot);
+    const guardSnapshot = SYNC.buildGuardSnapshot(this.guards, {
+      position: player.pos,
+      dimension: player.dimension,
+      radius,
+      maxBytes: SYNC.MAX_PAYLOAD_BYTES,
+      maxEntities: SYNC.SNAPSHOT_MAX_ZOMBIES,
+      now
+    });
+    player.lastSnapshotCount = snapshot.count + guardSnapshot.count;
+    const packed = SYNC.packCombinedSnapshot(snapshot, guardSnapshot);
     this.net.send(player.id, EVENTS.ZOMBIES, packed);
     this.metrics.snapshotsSent += 1;
     this.metrics.snapshotBytes += byteLength(packed);
     if (this.config.debug.logSnapshots) {
-      this.log('debug', `[snapshot] ${player.name}: ${snapshot.count}/${snapshot.total} зомби, ${snapshot.bytes} байт`);
+      this.log('debug', `[snapshot] ${player.name}: ${snapshot.count}/${snapshot.total} зомби, ${guardSnapshot.count} охрана, ${snapshot.bytes} байт`);
     }
+  }
+
+  // ---------------------------------------------------------------- базы: тик
+
+  tickBases(now) {
+    for (const player of this.players.values()) {
+      if (!player.alive) {
+        player.baseId = null;
+        continue;
+      }
+      const base = this.baseConfig.enabled ? this.findBaseAt(player.pos) : null;
+      player.baseId = base ? base.id : null;
+    }
+  }
+
+  // ---------------------------------------------------------------- охрана: спавн
+
+  guardsForZone(zoneId) {
+    let count = 0;
+    for (let i = 0; i < this.guards.length; i += 1) {
+      if (this.guards[i].alive && this.guards[i].zoneId === zoneId) count += 1;
+    }
+    return count;
+  }
+
+  tier3LootZones() {
+    const out = [];
+    for (let i = 0; i < this.zones.loot.length; i += 1) {
+      const zone = this.zones.loot[i];
+      if (Number(zone.tier) === 3) out.push(zone);
+    }
+    return out;
+  }
+
+  tickGuardSpawning(now) {
+    if (!this.guardConfig.enabled) return;
+    if (now < this.nextGuardSpawnAt) return;
+    this.nextGuardSpawnAt = now + (Number(this.guardConfig.spawnIntervalMs) || GUARD.SPAWN_INTERVAL_MS);
+    if (!this.players.size) return;
+
+    const globalCap = Number(this.guardConfig.globalCap) || GUARD.GLOBAL_CAP;
+    if (this.guards.reduce((sum, guard) => sum + (guard.alive ? 1 : 0), 0) >= globalCap) return;
+
+    const perZone = Math.max(1, Number(this.guardConfig.perZone) || 3);
+    const zones = this.tier3LootZones();
+    for (let i = 0; i < zones.length; i += 1) {
+      const zone = zones[i];
+      if (this.guardsForZone(zone.id) >= perZone) continue;
+      if (this.distanceToPlayer(zone.pos) > 260) continue;
+      this.spawnGuardInZone(zone, now);
+    }
+  }
+
+  spawnGuardInZone(zone, now) {
+    const def = this.pickGuardType();
+    if (!def) return null;
+    let pos = null;
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      const candidate = V.randomPointInCircle(zone.pos, (Number(zone.radius) || 40) * 0.7, this.rng);
+      const playerDist = this.distanceToPlayer(candidate);
+      if (playerDist < Number(this.guardConfig.minSpawnDistanceFromPlayers || 20)) continue;
+      pos = candidate;
+      break;
+    }
+    if (!pos) return null;
+    const guard = GUARDS.createGuard({
+      id: ++this.counters.guard,
+      def,
+      pos,
+      heading: this.rng.float(0, 360),
+      zone,
+      zoneId: zone.id,
+      dimension: 0,
+      rng: this.rng
+    });
+    guard.nextThinkAt = now + this.rng.int(0, guard.thinkIntervalMs);
+    guard.typeCode = this.guardTypeCodes.get(def.id) || 0;
+    this.guards.push(guard);
+    this.guardById.set(guard.id, guard);
+    this.metrics.guardsSpawned += 1;
+    return guard;
+  }
+
+  pickGuardType() {
+    const types = this.data.guardTypes;
+    if (!types.length) return null;
+    const weighted = types.map((type) => ({
+      type,
+      weight: Number(type.spawnWeight) || 1
+    }));
+    const picked = this.rng.weighted(weighted);
+    return picked ? picked.type : types[0];
+  }
+
+  // ---------------------------------------------------------------- охрана: тик
+
+  buildGuardContext(now) {
+    return this.buildZombieContext(now);
+  }
+
+  tickGuards(now, dt) {
+    if (!this.guardConfig.enabled) return;
+    this.tickGuardSpawning(now);
+
+    const ctx = this.buildGuardContext(now);
+    const deadTtl = Number(this.guardConfig.corpseTtlMs) || GUARD.CORPSE_TTL_MS;
+    const despawnDistance = Number(this.guardConfig.despawnDistance) || GUARD.DESPAWN_DISTANCE;
+    const survivors = [];
+
+    for (let i = 0; i < this.guards.length; i += 1) {
+      const guard = this.guards[i];
+
+      if (!guard.alive) {
+        if (now - guard.deathAt < deadTtl) survivors.push(guard);
+        else this.guardById.delete(guard.id);
+        continue;
+      }
+
+      const near = this.nearestPlayerDistance(guard.pos, guard.dimension);
+      if (near > despawnDistance) {
+        guard.idleSince = guard.idleSince || now;
+        if (now - guard.idleSince > 120000) {
+          this.guardById.delete(guard.id);
+          continue;
+        }
+      } else {
+        guard.idleSince = 0;
+      }
+
+      const actions = GUARDS.stepGuard(guard, ctx, dt);
+      for (let a = 0; a < actions.length; a += 1) {
+        const action = actions[a];
+        if (action.type === 'shot') this.handleGuardShot(guard, action, now);
+      }
+      survivors.push(guard);
+    }
+    this.guards = survivors;
+  }
+
+  guardDef(guard) {
+    return this.data.guardIndex[guard.typeId] || this.data.guardTypes[0] || {};
+  }
+
+  handleGuardShot(guard, action, now) {
+    const player = this.players.get(action.playerId);
+    if (!player || !player.alive) return;
+    if (player.dimension !== guard.dimension) return;
+    // В безопасной зоне (лагерь/ база) охрана не стреляет.
+    if (this.isSafeForPlayer(player)) return;
+    const dist = V.distance(guard.pos, player.pos);
+    if (dist > guard.attackRange + 3) return;
+    if (!action.hit) {
+      // Промаз — летит мимо. Целевому игроку урон не наносим.
+      this.net.send(player.id, EVENTS.HIT, JSON.stringify({
+        type: 'guard-miss', id: guard.id, dmg: 0, head: false, kill: false
+      }));
+      return;
+    }
+    this.applyDamage(player, Number(action.damage) || guard.damage, {
+      cause: 'guard',
+      sourceId: guard.id,
+      killer: guard,
+      now
+    });
+    // Выстрелы охраны привлекают зомби.
+    this.registerNoise({ pos: guard.pos, radius: 60, at: now, dimension: guard.dimension });
+  }
+
+  onGuardDeath(guard, killer) {
+    this.metrics.guardsKilled += 1;
+    const def = this.guardDef(guard);
+    if (killer) {
+      killer.kills.guards = (killer.kills.guards || 0) + 1;
+      killer.score += Number(def.score) || 250;
+    }
+    // Из бота всегда выпадает случайный ТОП-предмет.
+    const roll = this.rollLoot(def.dropTable || 'top');
+    if (roll) {
+      this.spawnGroundItem({
+        itemId: roll.itemId,
+        count: roll.count,
+        pos: {
+          x: guard.pos.x + this.rng.float(-0.6, 0.6),
+          y: guard.pos.y + this.rng.float(-0.6, 0.6),
+          z: guard.pos.z
+        },
+        dimension: guard.dimension,
+        zoneId: guard.zoneId,
+        despawnMs: Number(this.config.loot.dropDespawnMs) || 600000,
+        source: 'guard'
+      });
+    }
+    this.net.broadcast(EVENTS.GUARD_KILLED, JSON.stringify({
+      id: guard.id,
+      pos: guard.pos,
+      by: killer ? killer.name : null
+    }));
   }
 
   // ---------------------------------------------------------------- зомби
@@ -605,7 +1086,8 @@ class Game {
         pos: player.pos,
         alive: player.alive,
         dimension: player.dimension,
-        inSafeZone: !!player.safeZoneId
+        // И лагеря, и база выживших — безопасные зоны.
+        inSafeZone: !!(player.safeZoneId || player.baseId)
       });
     }
     return { now, players, rng: this.rng, night: this.isNight() };
@@ -670,8 +1152,8 @@ class Game {
     const ddef = this.data.zombieIndex[zombie.typeId];
     if (!ddef) return;
     if (V.distance(zombie.pos, player.pos) > (Number(ddef.attackRange) || 1.6) + 1.5) return;
-    if (player.safeZoneId && this.zones.safe.some((zone) => zone.id === player.safeZoneId && zone.pvp === false)) {
-      // В безопасной зоне зомби не наносят урон.
+    if (this.isSafeForPlayer(player)) {
+      // В безопасной зоне (лагерь/база) зомби не наносят урон.
       return;
     }
     this.applyDamage(player, Number(action.damage) || 5, {
@@ -689,6 +1171,10 @@ class Game {
     const now = Number(opts.now) || this.lastTickAt;
     if (player.invulnerableUntil && now < player.invulnerableUntil && !opts.ignoreInvulnerable) {
       return { dead: false, ignored: true };
+    }
+    // Безопасная зона (лагерь / база выживших): урон по игрокам запрещён.
+    if (!opts.ignoreSafeZone && this.isSafeForPlayer(player)) {
+      return { dead: false, ignored: true, safe: true };
     }
 
     const bonuses = INV.equipBonuses(player.inventory, this.data.itemsIndex);
@@ -750,7 +1236,7 @@ class Game {
   respawnPlayer(playerId) {
     const player = this.players.get(playerId);
     if (!player || player.alive) return false;
-    player.pos = this.findSpawnPosition();
+    player.pos = this.findSpawnPosition(player.selectedSpawn);
     player.heading = this.rng.float(0, 360);
     // Даём движку пару тиков, чтобы позиция после spawn() догнала серверную.
     player.positionGraceUntil = this.lastTickAt + 3000;
@@ -819,6 +1305,7 @@ class Game {
       itemId: def.id,
       count: Math.max(1, Math.floor(Number(opts.count) || 1)),
       meta: opts.meta || null,
+      model: LOOT.modelForItem(def, this.lootModels),
       pos: V.copy(opts.pos),
       dimension: opts.dimension || 0,
       zoneId: opts.zoneId || null,
@@ -832,7 +1319,27 @@ class Game {
       this.zoneRuntime.get(item.zoneId).itemIds.push(item.id);
     }
     this.metrics.itemsSpawned += 1;
+    // Физические объекты на земле (System 1):Sync для клиентов рядом.
+    if ((item.source === 'loot' || item.source === 'guard') && item.zoneId) {
+      this.broadcastLootNear(item.pos, EVENTS.LOOT_SPAWN, JSON.stringify({
+        id: item.id,
+        x: item.pos.x,
+        y: item.pos.y,
+        z: item.pos.z,
+        m: item.model,
+        i: item.itemId
+      }));
+    }
     return item;
+  }
+
+  /** Рассылка появления/исчезновения физического лута игрокам рядом. */
+  broadcastLootNear(pos, eventName, payload) {
+    const radius = Number(this.config.loot.pickupRange) + 60;
+    for (const player of this.players.values()) {
+      if (!player.alive) continue;
+      if (V.distance(player.pos, pos) <= radius) this.net.send(player.id, eventName, payload);
+    }
   }
 
   rollLoot(tableId) {
@@ -859,17 +1366,44 @@ class Game {
       this.groundItems = kept;
     }
 
+    // Респавн поднятого лута: таймер зависит от тьера (ТОП — 300 с).
+    for (const runtime of this.zoneRuntime.values()) {
+      if (runtime.pendingRespawn <= 0) continue;
+      if (now < runtime.nextRespawnAt) continue;
+      const zone = runtime.zone;
+      const tier = this.tiers[Number(zone.tier) || 1];
+      const roll = LOOT.rollTierLoot(this.rng, this.data.lootTables, tier.tables);
+      if (!roll) {
+        runtime.pendingRespawn = 0;
+        continue;
+      }
+      const pos = V.randomPointInCircle(zone.pos, (Number(zone.radius) || 30) * 0.85, this.rng);
+      const item = this.spawnGroundItem({
+        itemId: roll.itemId,
+        count: roll.count,
+        pos,
+        zoneId: zone.id,
+        despawnMs: 0
+      });
+      if (item) runtime.itemIds.push(item.id);
+      runtime.pendingRespawn -= 1;
+      runtime.nextRespawnAt = now + tier.respawnMs;
+    }
+
     if (now < this.nextLootTopUpAt) return;
     this.nextLootTopUpAt = now + (Number(this.config.world.lootTopUpMs) || 20000);
 
     for (const runtime of this.zoneRuntime.values()) {
       const zone = runtime.zone;
       runtime.itemIds = runtime.itemIds.filter((id) => this.groundItems.some((item) => item.id === id));
+      const tier = this.tiers[Number(zone.tier) || 1];
       const target = Number(zone.count) || 8;
       if (runtime.itemIds.length >= target) continue;
       if (this.distanceToPlayer(zone.pos) > 260) continue; // не плодим лут в пустых зонах
+      // Шанс спавна падает с рангом тьера.
+      if (!LOOT.spawnChance(tier, this.rng)) continue;
 
-      const roll = this.rollLoot(zone.lootTable);
+      const roll = LOOT.rollTierLoot(this.rng, this.data.lootTables, tier.tables);
       if (!roll) continue;
       const pos = V.randomPointInCircle(zone.pos, (Number(zone.radius) || 30) * 0.85, this.rng);
       const item = this.spawnGroundItem({
@@ -904,6 +1438,13 @@ class Game {
     if (!player || !player.alive) return;
     if (!this.limiter.allow(`interact:${playerId}`, 8, 1000, this.lastTickAt)) return;
     const payload = typeof raw === 'string' ? safeJsonParse(raw, 512) : raw || {};
+
+    // Взаимодействие с базой (System 3): claim/gate/code.
+    if (payload && payload.base) {
+      this.handleBaseAction(player, payload);
+      return;
+    }
+
     let item = null;
     if (payload && payload.id) {
       item = this.groundItems.find((entry) => entry.id === payload.id) || null;
@@ -936,10 +1477,88 @@ class Game {
       if (item.zoneId && this.zoneRuntime.has(item.zoneId)) {
         const runtime = this.zoneRuntime.get(item.zoneId);
         runtime.itemIds = runtime.itemIds.filter((id) => id !== item.id);
+        // Запускаем таймер респавна (300 с для ТОП-зоны).
+        const tier = this.tiers[Number(runtime.zone.tier) || 1];
+        runtime.pendingRespawn += 1;
+        if (!runtime.nextRespawnAt || this.lastTickAt >= runtime.nextRespawnAt) {
+          runtime.nextRespawnAt = this.lastTickAt + tier.respawnMs;
+        }
+      }
+      // Убираем физический объект у клиентов рядом.
+      if (item.source === 'loot' || item.source === 'guard') {
+        this.broadcastLootNear(item.pos, EVENTS.LOOT_REMOVE, JSON.stringify({ id: item.id }));
       }
       this.sendToast(player, `+ ${result.added} × ${this.itemName(item.itemId)}`, 'success');
     }
     this.sendInventory(player);
+  }
+
+  // ---------------------------------------------------------------- базы: взаимодействие
+
+  handleBaseAction(player, payload) {
+    if (!this.baseConfig.enabled) {
+      this.sendToast(player, 'Система баз отключена', 'muted');
+      return;
+    }
+    const act = String(payload.act || '');
+    const interactRange = Number(this.baseConfig.interactRange) || 6;
+    let base = null;
+
+    if (act === 'claim' || act === 'unclaim' || act === 'code') {
+      base = this.findNearestBase(player.pos, interactRange + 4);
+    } else if (act === 'gate') {
+      base = this.findGateAt(player.pos) || this.findNearestBase(player.pos, interactRange + 4);
+    }
+    if (!base) {
+      this.sendToast(player, 'Рядом нет базы', 'muted');
+      return;
+    }
+
+    let res = { ok: false, reason: 'no-base' };
+    if (act === 'claim') {
+      res = BASES.claimBase(base, player, this.lastTickAt);
+      if (res.ok) {
+        this.sendToast(player, `База «${base.name}» занята. Установите пин-код ворот.`, 'success');
+      } else if (res.reason === 'owned') {
+        this.sendToast(player, `База занята: ${res.owner}`, 'warning');
+      }
+    } else if (act === 'unclaim') {
+      res = BASES.unclaimBase(base, player);
+      if (res.ok) this.sendToast(player, `База «${base.name}» освобождена`, 'muted');
+      else this.sendToast(player, 'Это не ваша база', 'warning');
+    } else if (act === 'gate') {
+      res = BASES.toggleGate(base, player, this.lastTickAt);
+      if (res.ok) this.sendToast(player, `Ворота: ${res.open ? 'отворены' : 'закрыты'}`, res.open ? 'success' : 'muted');
+      else this.sendToast(player, 'Нужен пин-код ворот', 'warning');
+    } else if (act === 'code') {
+      res = BASES.setGateCode(base, player, payload.code, this.lastTickAt);
+      if (res.ok) this.sendToast(player, `Пин-код ворот установлен: ${res.code}`, 'success');
+      else if (res.reason === 'not-owner') this.sendToast(player, 'Только владелец базы ставит пин-код', 'warning');
+      else this.sendToast(player, 'Пин-код: 3–8 цифр', 'warning');
+    }
+
+    this.broadcastBaseUpdate(base);
+  }
+
+  basePayload(base) {
+    return {
+      id: base.id,
+      name: base.name,
+      x: base.pos.x,
+      y: base.pos.y,
+      r: base.radius,
+      gx: base.gate.pos.x,
+      gy: base.gate.pos.y,
+      gr: base.gate.radius,
+      open: base.gate.open,
+      owner: base.ownerName,
+      code: base.gate.code
+    };
+  }
+
+  broadcastBaseUpdate(base) {
+    if (!base) return;
+    this.net.broadcast(EVENTS.BASE_UPDATE, JSON.stringify(this.basePayload(base)));
   }
 
   // ---------------------------------------------------------------- бой
@@ -974,6 +1593,21 @@ class Game {
       if (playerDist < bestDist) {
         bestDist = playerDist;
         best = { type: 'zombie', zombie, headshot: (to.z - zombie.pos.z) > 1.35 };
+      }
+    }
+
+    // Охрана ТОП-зон (System 2): перемаскируем в зомби-петли.
+    for (let i = 0; i < this.guards.length; i += 1) {
+      const guard = this.guards[i];
+      if (!guard.alive || guard.dimension !== player.dimension) continue;
+      const center = { x: guard.pos.x, y: guard.pos.y, z: guard.pos.z + 0.95 };
+      const distToRay = segmentDistance(center, from, to);
+      if (distToRay > 0.9) continue;
+      const shooterDist = V.distance(player.pos, center);
+      if (shooterDist > range + rangeTolerance) continue;
+      if (shooterDist < bestDist) {
+        bestDist = shooterDist;
+        best = { type: 'guard', guard, headshot: (to.z - guard.pos.z) > 1.35 };
       }
     }
 
@@ -1018,6 +1652,25 @@ class Game {
       }));
       if (result.dead) this.onZombieDeath(best.zombie, player);
       return { type: 'zombie', id: best.zombie.id, damage: damage * multiplier, kill: result.dead };
+    }
+
+    if (best.type === 'guard') {
+      const result = GUARDS.damageGuard(best.guard, damage * multiplier, {
+        now: this.lastTickAt,
+        sourceType: 'player',
+        sourceId: player.id
+      });
+      this.metrics.hits += 1;
+      this.net.send(player.id, EVENTS.HIT, JSON.stringify({
+        type: 'guard',
+        id: best.guard.id,
+        dmg: Math.round(damage * multiplier),
+        head: headshot,
+        kill: result.dead,
+        hp: best.guard.health
+      }));
+      if (result.dead) this.onGuardDeath(best.guard, player);
+      return { type: 'guard', id: best.guard.id, damage: damage * multiplier, kill: result.dead };
     }
 
     this.applyDamage(best.player, damage * multiplier, {
@@ -1199,6 +1852,7 @@ class Game {
       cap: INV.capacityKg(player.inventory, 0),
       z: player.kills.zombies,
       p: player.kills.players,
+      g: player.kills.guards || 0,
       sc: player.score,
       d: player.deaths,
       night: this.isNight(),
@@ -1207,6 +1861,7 @@ class Game {
       py: Math.round(player.pos.y),
       nz: player.lastSnapshotCount > 0 ? player.lastSnapshotCount : 0,
       safe: player.safeZoneId || null,
+      base: player.baseId || null,
       alive: player.alive,
       respawnIn: player.alive ? 0 : Math.max(0, player.respawnAt - (now || this.lastTickAt))
     });
@@ -1271,6 +1926,11 @@ class Game {
       })),
       toxinZones: this.zones.toxin.map((zone) => ({
         id: zone.id, name: zone.name, x: zone.pos.x, y: zone.pos.y, r: zone.radius
+      })),
+      baseZones: this.bases.map((base) => ({
+        id: base.id, name: base.name, x: base.pos.x, y: base.pos.y, r: base.radius,
+        gx: base.gate.pos.x, gy: base.gate.pos.y, gr: base.gate.radius,
+        open: base.gate.open, owner: base.ownerName, code: base.gate.code
       }))
     };
     this.net.send(player.id, EVENTS.MAP, JSON.stringify(payload));
@@ -1619,6 +2279,8 @@ class Game {
       players: this.players.size,
       zombiesAlive: this.zombies.filter((zombie) => zombie.alive).length,
       zombiesTotal: this.zombies.length,
+      guardsAlive: this.guards.filter((guard) => guard.alive).length,
+      guardsTotal: this.guards.length,
       groundItems: this.groundItems.length,
       ticks: this.metrics.ticks,
       tickAvgMs: Math.round(avg * 100) / 100,

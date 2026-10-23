@@ -1,19 +1,22 @@
 {
-  "builtAt": "2026-10-23T09:40:02.043Z",
+  "builtAt": "2026-10-23T14:52:33.086Z",
   "entry": "client/index.js",
   "out": "client_packages/gold/goldclient.js",
   "modules": [
     "client/index.js",
     "client/ui.js",
     "client/zombies.js",
+    "client/guards.js",
     "client/combat.js",
     "client/world.js",
+    "client/loot.js",
+    "client/bases.js",
     "shared/netcode.js",
     "shared/sync.js",
     "shared/vec3.js",
     "shared/constants.js"
   ],
-  "bytes": 48326,
+  "bytes": 71991,
   "uiFiles": [
     "index.html",
     "style.css",

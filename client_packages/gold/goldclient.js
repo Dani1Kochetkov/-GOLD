@@ -12,9 +12,12 @@
 
 const UI = __require(1);
 const Zombies = __require(2);
-const Combat = __require(3);
-const World = __require(4);
-const { sanitizeText } = __require(5);
+const Guards = __require(3);
+const Combat = __require(4);
+const World = __require(5);
+const Loot = __require(6);
+const Bases = __require(7);
+const { sanitizeText } = __require(8);
 
 const state = {
   catalog: new Map(),
@@ -91,6 +94,21 @@ function handleUIAction(action) {
     case 'radio':
       mp.events.callRemote('gold:radio', sanitizeText(action.text, 140));
       break;
+    case 'baseClaim':
+      sendBaseAction(action.base, 'claim');
+      break;
+    case 'baseUnclaim':
+      sendBaseAction(action.base, 'unclaim');
+      break;
+    case 'baseGate':
+      sendBaseAction(action.base, 'gate');
+      break;
+    case 'baseCode':
+      sendBaseAction(action.base, 'code', sanitizeText(action.code, 8));
+      break;
+    case 'entrySubmit':
+      sendEntrySubmit(action.data);
+      break;
     default:
       break;
   }
@@ -98,6 +116,16 @@ function handleUIAction(action) {
 
 function sendInventoryAction(action) {
   mp.events.callRemote('gold:inv', JSON.stringify(action));
+}
+
+function sendBaseAction(baseId, act, code) {
+  const payload = { base: String(baseId || ''), act: String(act || '') };
+  if (code) payload.code = String(code);
+  mp.events.callRemote('gold:base', JSON.stringify(payload));
+}
+
+function sendEntrySubmit(payload) {
+  mp.events.callRemote('gold:entrySubmit', JSON.stringify(payload));
 }
 
 // ------------------------------------------------------------------ панели
@@ -159,12 +187,14 @@ on('gold:catalog', (payload) => {
 
 on('gold:map', (payload) => {
   state.map = JSON.parse(payload);
+  if (state.map && state.map.baseZones) Bases.applyMap(state.map.baseZones);
   post({ t: 'map', data: state.map });
 });
 
 on('gold:welcome', (payload) => {
   state.welcome = JSON.parse(payload);
   Zombies.setTypes(state.welcome.zombies || []);
+  Guards.setTypes(state.welcome.guards || []);
   World.applyWelcome(state.welcome);
   post({ t: 'welcome', data: state.welcome });
 });
@@ -193,7 +223,45 @@ on('gold:chat', (text) => {
 });
 
 on('gold:zombies', (payload) => {
-  Zombies.applySnapshot(payload);
+  let combined = null;
+  try {
+    combined = typeof payload === 'string' ? JSON.parse(payload) : payload;
+  } catch (err) {
+    return;
+  }
+  if (!combined) return;
+  // Сервер отправляет объединенный снапшот {t, z, g}: z — зомби, g — охрана.
+  if (Array.isArray(combined.g)) {
+    if (Array.isArray(combined.z)) Zombies.applySnapshot(JSON.stringify({ z: combined.z }));
+    Guards.applySnapshot(JSON.stringify({ z: combined.g }));
+  } else {
+    Zombies.applySnapshot(payload);
+  }
+});
+
+on('gold:guards', (payload) => {
+  Guards.applySnapshot(payload);
+});
+
+on('gold:guardKilled', (payload) => {
+  Guards.onKilled(payload);
+});
+
+on('gold:lootSpawn', (payload) => {
+  Loot.onSpawn(payload);
+});
+
+on('gold:lootRemove', (payload) => {
+  Loot.onRemove(payload);
+});
+
+on('gold:baseUpdate', (payload) => {
+  Bases.applyUpdate(payload);
+  try {
+    post({ t: 'baseUpdate', data: JSON.parse(payload) });
+  } catch (err) {
+    // ignore
+  }
 });
 
 on('gold:zombieKilled', (payload) => {
@@ -310,6 +378,45 @@ on('gold:ui', (payload) => {
   else closePanel();
 });
 
+// ------------------------------------------------------------------ вход (System 4)
+
+on('gold:entry', (payload) => {
+  let data = null;
+  try {
+    data = JSON.parse(payload);
+  } catch (err) {
+    return;
+  }
+  if (!data) return;
+  post({
+    t: 'entry',
+    data,
+    action: (data.required === false || !data.required) ? 'play' : 'login'
+  });
+});
+
+on('gold:entryOk', (payload) => {
+  let data = null;
+  try {
+    data = JSON.parse(payload);
+  } catch (err) {
+    data = {};
+  }
+  post({ t: 'entryOk', data: data || {} });
+  UI.toast(data && data.name ? `Добро пожаловать, ${data.name}` : 'Добро пожаловать', 'success');
+});
+
+on('gold:entryFail', (payload) => {
+  let data = null;
+  try {
+    data = JSON.parse(payload);
+  } catch (err) {
+    data = {};
+  }
+  post({ t: 'entryFail', data: data || {} });
+  UI.toast((data && data.reason) || 'Вход невозможен', 'warning');
+});
+
 // ------------------------------------------------------------------ управление
 
 function bindKey(code, handler) {
@@ -336,6 +443,14 @@ bindKey(KEY.ESC, () => {
 });
 bindKey(KEY.E, () => {
   if (state.dead || state.panel) return;
+  const local = mp.players.local;
+  if (!local) return;
+  const near = Bases.nearBase(local.position, 6);
+  if (near) {
+    // Рядом база: открываем панель управления базой (CEF).
+    post({ t: 'basePanel', base: near.id, name: near.name, owner: near.owner });
+    return;
+  }
   mp.events.callRemote('gold:interact', JSON.stringify({}));
 });
 bindKey(KEY.R, () => {
@@ -370,6 +485,9 @@ mp.events.add('render', () => {
   try {
     Combat.forceBlocked = !!state.panel;
     Zombies.update();
+    Guards.update();
+    Loot.update();
+    Bases.update();
     World.update();
     Combat.update();
   } catch (err) {
@@ -520,8 +638,8 @@ module.exports = new UIBridge();
 
 /** Клиентское представление зомби: пул client-side peds, интерполяция, анимация. */
 
-const SYNC = __require(6);
-const V = __require(7);
+const SYNC = __require(9);
+const V = __require(10);
 
 const STATE = SYNC.STATE_CODES;
 
@@ -757,7 +875,277 @@ class ZombieView {
 module.exports = new ZombieView();
 
     },
-    3: function (module, exports, __require) { /* client/combat.js */
+    3: function (module, exports, __require) { /* client/guards.js */
+'use strict';
+
+/** Клиентское представление охранников TOP-зоны: пул peds + АДДС-бар. */
+
+const SYNC = __require(9);
+const V = __require(10);
+
+const STATE = SYNC.GUARD_STATE_CODES;
+
+class GuardView {
+  constructor() {
+    this.clientState = SYNC.createClientState();
+    this.peds = new Map();
+    this.types = [];
+    this.models = new Map();
+    this.pendingModels = new Map();
+    this.lastSnapshot = null;
+    this.snapshotAge = 0;
+    this.nearby = 0;
+    this.pedTasks = new Map();
+    this.bars = new Map();
+  }
+
+  setTypes(types) {
+    this.types = Array.isArray(types) ? types : [];
+    for (let i = 0; i < this.types.length; i += 1) {
+      const type = this.types[i];
+      if (!type || !type.m) continue;
+      const hash = mp.game.joaat(type.m);
+      this.models.set(type.c, hash);
+      if (!mp.game.streaming.hasModelLoaded(hash)) {
+        mp.game.streaming.requestModel(hash);
+        this.pendingModels.set(hash, Date.now());
+      }
+    }
+  }
+
+  typeFor(code) {
+    for (let i = 0; i < this.types.length; i += 1) {
+      if (this.types[i].c === code) return this.types[i];
+    }
+    return null;
+  }
+
+  applySnapshot(payload) {
+    const snapshot = SYNC.unpackSnapshot(payload);
+    if (!snapshot) return;
+    this.lastSnapshot = snapshot;
+    this.snapshotAge = 0;
+    SYNC.applySnapshot(this.clientState, snapshot, Date.now());
+    this.syncPeds();
+  }
+
+  ensurePed(entity) {
+    const existing = this.peds.get(entity.id);
+    if (existing) return existing;
+    const hash = this.models.get(entity.typeCode) || this.models.get(0);
+    if (!hash) return null;
+    if (!mp.game.streaming.hasModelLoaded(hash)) {
+      mp.game.streaming.requestModel(hash);
+      this.pendingModels.set(hash, Date.now());
+      return null;
+    }
+    let ped = null;
+    try {
+      ped = mp.peds.new(hash, new mp.Vector3(entity.pos.x, entity.pos.y, entity.pos.z), entity.heading || 0, 0);
+    } catch (err) {
+      return null;
+    }
+    if (!ped) return null;
+    this.peds.set(entity.id, ped);
+    this.configurePed(ped, entity);
+    return ped;
+  }
+
+  configurePed(ped, entity) {
+    try {
+      ped.setInvincible(true);
+      ped.setProofs(true, true, true, true, true, true, true, true);
+      ped.setCanRagdoll(false);
+      ped.setAlpha(255);
+      mp.game.ped.setPedCanBeTargetted(ped.handle, false);
+      if (typeof ped.setDimension === 'function') ped.setDimension(0);
+      else ped.dimension = 0;
+      mp.game.ped.setBlockingOfNonTemporaryEvents(ped.handle, true);
+      mp.game.ped.setPedFleeAttributes(ped.handle, 0, false);
+      mp.game.ped.setPedCombatAttributes(ped.handle, 46, true);
+      mp.game.ped.setPedSuffersCriticalHits(ped.handle, false);
+      // Военная анимация: оружейная PreparedPedAnimation — без нативного API,
+      // оставляем стандартную походку бойца.
+    } catch (err) {
+      // часть нативов может отсутствовать
+    }
+  }
+
+  syncPeds() {
+    const now = Date.now();
+    const entities = this.clientState.entities;
+    for (const entity of entities.values()) {
+      const ped = this.ensurePed(entity);
+      if (!ped) continue;
+      this.updatePed(ped, entity, now);
+    }
+  }
+
+  updatePed(ped, entity, now) {
+    const pos = SYNC.computePosition(entity, now);
+    const heading = SYNC.computeHeading(entity, now);
+    const chasing = entity.state === 'aggro' || entity.state === 'attack' || entity.state === 'return';
+    const speed = chasing ? 3.6 : 1.4;
+    const distance = V.distance(ped.position, pos);
+
+    try {
+      if (distance > 4.5) {
+        ped.setCoords(pos.x, pos.y, pos.z, false, false, false, false);
+        ped.setHeading(heading);
+        this.pedTasks.delete(entity.id);
+      } else if (entity.state === 'aggro' || entity.state === 'attack' || entity.state === 'patrol') {
+        const lastTaskAt = this.pedTasks.get(entity.id) || 0;
+        if (now - lastTaskAt > 600) {
+          this.pedTasks.set(entity.id, now);
+          mp.game.ped.taskGoStraightToCoord(ped.handle, pos.x, pos.y, pos.z, speed, 1200, heading, 0.4);
+        }
+      } else {
+        ped.setCoords(pos.x, pos.y, pos.z, false, false, false, false);
+        ped.setHeading(heading);
+      }
+    } catch (err) {
+      this.peds.delete(entity.id);
+    }
+  }
+
+  onKilled(payload) {
+    let data = null;
+    try {
+      data = typeof payload === 'string' ? JSON.parse(payload) : payload;
+    } catch (err) {
+      return;
+    }
+    if (!data || !data.id) return;
+    const ped = this.peds.get(data.id);
+    if (ped) {
+      try {
+        mp.game.ped.setPedToRagdoll(ped.handle, 3500, 3500, 0, false, false, false);
+      } catch (err) {
+        // ignore
+      }
+      setTimeout(() => this.removePed(data.id), 1500);
+    }
+    this.clientState.entities.delete(data.id);
+  }
+
+  removePed(id) {
+    const ped = this.peds.get(id);
+    if (!ped) return;
+    try {
+      ped.destroy();
+    } catch (err) {
+      // уже уничтожен
+    }
+    this.peds.delete(id);
+    this.pedTasks.delete(id);
+    this.bars.delete(id);
+  }
+
+  drawBar(ped, entity) {
+    const id = entity.id;
+    let bar = this.bars.get(id);
+    if (!bar) {
+      bar = this.makeBar();
+      if (!bar) return;
+      this.bars.set(id, bar);
+    }
+    try {
+      const pos = SYNC.computePosition(entity, Date.now());
+      const head = new mp.Vector3(pos.x, pos.y, pos.z + 2.2);
+      bar.setCoords(head.x, head.y, head.z, false, false, false, false);
+      bar.setHeight(0.18);
+      bar.setWidth(1.2);
+      bar.setScale(1.2, 1);
+      bar.setColour(255, 40, 40);
+      bar.setDepth(true);
+      bar.setVisible(true);
+    } catch (err) {
+      // ignore
+    }
+  }
+
+  makeBar() {
+    let bar = null;
+    try {
+      bar = mp.screenui.newSprite('mpgov_gta_hud', 'mprgb_gta_hud', 0.5, 0.5, 0);
+    } catch (err) {
+      return null;
+    }
+    if (!bar) return null;
+    try {
+      bar.setAlwaysOntop(false);
+      bar.setOverlapsEverything(false);
+      bar.setPrimaryColourRGB(255, 255, 255);
+    } catch (err) {
+      // ignore
+    }
+    return bar;
+  }
+
+  update() {
+    const now = Date.now();
+    const entities = this.clientState.entities;
+
+    for (const [id, entity] of entities) {
+      if (now - entity.lastSeenAt > 3000) {
+        entities.delete(id);
+        this.removePed(id);
+      }
+    }
+
+    if (this.pendingModels.size) {
+      for (const [hash, requestedAt] of this.pendingModels) {
+        if (mp.game.streaming.hasModelLoaded(hash)) this.pendingModels.delete(hash);
+        else if (now - requestedAt > 15000) this.pendingModels.delete(hash);
+      }
+      this.syncPeds();
+    }
+
+    let nearby = 0;
+    const local = mp.players.local;
+    for (const entity of entities.values()) {
+      const ped = this.peds.get(entity.id);
+      if (!ped) continue;
+      this.updatePed(ped, entity, now);
+      this.drawBar(ped, entity);
+      if (local && V.distance(entity.pos, local.position) <= 80) nearby += 1;
+    }
+    this.nearby = nearby;
+
+    if (this.lastSnapshot) this.snapshotAge = now - (this.clientState.lastSnapshotAt || now);
+  }
+
+  setDimension() {
+    const dimension = mp.players.local.dimension || 0;
+    for (const ped of this.peds.values()) {
+      try {
+        if (typeof ped.setDimension === 'function') ped.setDimension(dimension);
+        else ped.dimension = dimension;
+      } catch (err) {
+        // ignore
+      }
+    }
+  }
+
+  destroyAll() {
+    for (const id of Array.from(this.peds.keys())) this.removePed(id);
+    this.clientState.entities.clear();
+  }
+
+  stats() {
+    return {
+      peds: this.peds.size,
+      entities: this.clientState.entities.size,
+      snapshotAge: this.snapshotAge,
+      nearby: this.nearby
+    };
+  }
+}
+
+module.exports = new GuardView();
+
+    },
+    4: function (module, exports, __require) { /* client/combat.js */
 'use strict';
 
 /** Стрельба/ближний бой: клиент считает луч и отправляет серверу геометрию выстрела. */
@@ -916,7 +1304,7 @@ class Combat {
 module.exports = new Combat();
 
     },
-    4: function (module, exports, __require) { /* client/world.js */
+    5: function (module, exports, __require) { /* client/world.js */
 'use strict';
 
 /** Мир вокруг игрока: время, погода, вода, HUD, отправка состояния движения. */
@@ -1118,7 +1506,335 @@ class World {
 module.exports = new World();
 
     },
-    5: function (module, exports, __require) { /* shared/netcode.js */
+    6: function (module, exports, __require) { /* client/loot.js */
+'use strict';
+
+/** Физические 3D-предметы лута: mp.objects.new, появление/исчезновение. */
+
+const V = __require(10);
+const { sanitizeText } = __require(8);
+
+const FALLBACK_MODELS = ['prop_crate_01a', 'prop_box_debris_01'];
+
+class LootView {
+  constructor() {
+    this.objects = new Map();
+    this.pending = new Map();
+    this.fallbackIndex = 0;
+    this.lastSyncAt = 0;
+    this.lastInventoryAt = 0;
+  }
+
+  hashFor(modelName) {
+    const name = sanitizeText(String(modelName || ''), 64);
+    try {
+      const hash = mp.game.joaat(name);
+      if (hash > 0) return hash;
+    } catch (err) {
+      // ignore
+    }
+    const fallback = FALLBACK_MODELS[this.fallbackIndex % FALLBACK_MODELS.length];
+    this.fallbackIndex += 1;
+    try {
+      return mp.game.joaat(fallback);
+    } catch (err) {
+      return 0;
+    }
+  }
+
+  onSpawn(payload) {
+    let data = null;
+    try {
+      data = typeof payload === 'string' ? JSON.parse(payload) : payload;
+    } catch (err) {
+      return;
+    }
+    if (!data || !data.id) return;
+    if (this.objects.has(data.id)) return;
+
+    const hash = this.hashFor(data.m);
+    if (!hash) return;
+
+    if (!mp.game.streaming.hasModelLoaded(hash)) {
+      mp.game.streaming.requestModel(hash);
+      this.pending.set(data.id, { hash, data, requestedAt: Date.now() });
+      return;
+    }
+    this.createObject(data.id, hash, data);
+  }
+
+  createObject(id, hash, data) {
+    if (this.objects.has(id)) return;
+    let obj = null;
+    try {
+      obj = mp.objects.new(hash, new mp.Vector3(Number(data.x) || 0, Number(data.y) || 0, Number(data.z) || 0), mp.players.local.handle, false, false, mp.players.local.dimension || 0);
+    } catch (err) {
+      obj = null;
+    }
+    if (!obj) return;
+    try {
+      obj.setDimension(mp.players.local.dimension || 0);
+      obj.setRot(0, 0, 0);
+    } catch (err) {
+      // ignore
+    }
+    this.objects.set(id, obj);
+  }
+
+  onRemove(payload) {
+    let data = null;
+    try {
+      data = typeof payload === 'string' ? JSON.parse(payload) : payload;
+    } catch (err) {
+      return;
+    }
+    if (!data || !data.id) return;
+    this.removeObject(data.id);
+    this.pending.delete(data.id);
+  }
+
+  removeObject(id) {
+    const obj = this.objects.get(id);
+    if (!obj) return;
+    try {
+      obj.delete();
+    } catch (err) {
+      // уже удалён
+    }
+    this.objects.delete(id);
+  }
+
+  update() {
+    const now = Date.now();
+    if (now - this.lastSyncAt < 1000) return;
+    this.lastSyncAt = now;
+
+    // Ждём загрузки моделей и создаём объекты.
+    if (this.pending.size) {
+      for (const [id, entry] of Array.from(this.pending.entries())) {
+        const loaded = mp.game.streaming.hasModelLoaded(entry.hash);
+        if (!loaded && now - entry.requestedAt > 15000) {
+          this.pending.delete(id);
+          continue;
+        }
+        if (loaded) {
+          this.createObject(id, entry.hash, entry.data);
+          this.pending.delete(id);
+        }
+      }
+    }
+
+    // Очистка дальних объектов: иначе при перемещении по карте копится
+    // сотни mp.objects, которые больше никто не видит — это тормозит.
+    const local = mp.players.local;
+    if (local) {
+      for (const [id, obj] of Array.from(this.objects.entries())) {
+        try {
+          const dist = V.distance(obj.position, local.position);
+          if (dist > 350) this.removeObject(id);
+        } catch (err) {
+          this.removeObject(id);
+        }
+      }
+    }
+  }
+
+  destroyAll() {
+    for (const id of Array.from(this.objects.keys())) this.removeObject(id);
+    this.pending.clear();
+  }
+
+  stats() {
+    return { objects: this.objects.size, pending: this.pending.size };
+  }
+}
+
+module.exports = new LootView();
+
+    },
+    7: function (module, exports, __require) { /* client/bases.js */
+'use strict';
+
+/** Базы выживших: метки на карте, 3D-маркер, ворота, взаимодействие. */
+
+const V = __require(10);
+
+// mp.markers.new: type 0 = circle, цвета 0=red 1=green 2=blue 3=yellow.
+const MARKER_TYPE = 0;
+const MARKER_COLOR_FREE = 1; // зелёный
+const MARKER_COLOR_OWNED = 2; // синий
+
+class BaseView {
+  constructor() {
+    this.zones = new Map();
+    this.blips = new Map();
+    this.markers = new Map();
+    this.lastDraw = 0;
+  }
+
+  applyMap(baseZones) {
+    const list = Array.isArray(baseZones) ? baseZones : [];
+    this.destroyAll();
+    for (let i = 0; i < list.length; i += 1) {
+      const zone = list[i];
+      if (!zone || !zone.id) continue;
+      this.zones.set(zone.id, {
+        id: zone.id,
+        name: zone.name || zone.id,
+        pos: V.copy(zone.pos),
+        radius: Number(zone.radius) || 20,
+        gate: zone.gate ? {
+          pos: V.copy(zone.gate.pos),
+          heading: Number(zone.gate.heading) || 0,
+          radius: Number(zone.gate.radius) || 4
+        } : null,
+        owner: null,
+        codeSet: false,
+        gateOpen: false
+      });
+    }
+    this.refreshBlips();
+    this.refreshMarkers();
+  }
+
+  applyUpdate(payload) {
+    let data = null;
+    try {
+      data = typeof payload === 'string' ? JSON.parse(payload) : payload;
+    } catch (err) {
+      return;
+    }
+    if (!data || !data.id) return;
+    const zone = this.zones.get(String(data.id));
+    if (!zone) return;
+    if (data.owner !== undefined) zone.owner = data.owner || null;
+    if (data.code !== undefined) zone.codeSet = !!data.code;
+    if (data.open !== undefined) zone.gateOpen = !!data.open;
+    this.refreshBlips();
+    this.refreshMarkers();
+  }
+
+  refreshBlips() {
+    try {
+      for (const [id, blip] of Array.from(this.blips.entries())) {
+        if (mp.game.ui.doesBlipExist && !mp.game.ui.doesBlipExist(blip)) {
+          this.blips.delete(id);
+          continue;
+        }
+        mp.game.ui.removeBlip(blip);
+        this.blips.delete(id);
+      }
+    } catch (err) {
+      this.blips.clear();
+    }
+    for (const zone of this.zones.values()) {
+      try {
+        const blip = mp.game.ui.addBlipForCoord(zone.pos.x, zone.pos.y, zone.pos.z);
+        if (!blip) continue;
+        if (mp.game.ui.setBlipSprite) mp.game.ui.setBlipSprite(blip, zone.owner ? 47 : 8);
+        if (mp.game.ui.setBlipColour) mp.game.ui.setBlipColour(blip, zone.owner ? 4 : 0);
+        if (mp.game.ui.setBlipAlpha) mp.game.ui.setBlipAlpha(blip, 255);
+        if (mp.game.ui.setBlipScale) mp.game.ui.setBlipScale(blip, 1.2);
+        if (mp.game.ui.setBlipDisplay) mp.game.ui.setBlipDisplay(blip, 0);
+        if (mp.game.ui.setBlipName) mp.game.ui.setBlipName(blip, zone.name);
+        this.blips.set(zone.id, blip);
+      } catch (err) {
+        // ignore
+      }
+    }
+  }
+
+  refreshMarkers() {
+    // Пересоздём маркеры, если их API недоступен.
+    for (const [id, marker] of Array.from(this.markers.entries())) {
+      try {
+        marker.delete();
+      } catch (err) {
+        // ignore
+      }
+      this.markers.delete(id);
+    }
+    if (!mp.markers || typeof mp.markers.new !== 'function') return;
+    for (const zone of this.zones.values()) {
+      try {
+        const marker = mp.markers.new(
+          new mp.Vector3(zone.pos.x, zone.pos.y, zone.pos.z),
+          MARKER_TYPE,
+          zone.owner ? MARKER_COLOR_OWNED : MARKER_COLOR_FREE,
+          0.9,
+          false
+        );
+        if (marker) this.markers.set(zone.id, marker);
+      } catch (err) {
+        // ignore
+      }
+    }
+  }
+
+  update() {
+    const now = Date.now();
+    if (now - this.lastDraw < 400) return;
+    this.lastDraw = now;
+    const local = mp.players.local;
+    if (!local) return;
+
+    // Маркеры ворот: перекрашиваем по состоянию (открыт/закрыт).
+    for (const zone of this.zones.values()) {
+      if (!zone.gate) continue;
+      if (V.distance(zone.gate.pos, local.position) > 500) continue;
+      const marker = this.markers.get(zone.id);
+      if (!marker) continue;
+      try {
+        marker.setColour(zone.gateOpen ? MARKER_COLOR_FREE : 0);
+      } catch (err) {
+        // ignore
+      }
+    }
+  }
+
+  nearBase(pos, radius) {
+    const max = Number(radius) || 8;
+    let best = null;
+    let bestDist = Infinity;
+    for (const zone of this.zones.values()) {
+      const dist = V.distance(zone.pos, pos);
+      if (dist <= zone.radius + max && dist < bestDist) {
+        best = zone;
+        bestDist = dist;
+      }
+    }
+    return best;
+  }
+
+  destroyAll() {
+    for (const [id, blip] of Array.from(this.blips.entries())) {
+      try {
+        if (mp.game.ui.doesBlipExist && !mp.game.ui.doesBlipExist(blip)) continue;
+        mp.game.ui.removeBlip(blip);
+      } catch (err) {
+        // ignore
+      }
+      this.blips.delete(id);
+    }
+    for (const [id, marker] of Array.from(this.markers.entries())) {
+      try {
+        marker.delete();
+      } catch (err) {
+        // ignore
+      }
+      this.markers.delete(id);
+    }
+  }
+
+  stats() {
+    return { zones: this.zones.size, blips: this.blips.size, markers: this.markers.size };
+  }
+}
+
+module.exports = new BaseView();
+
+    },
+    8: function (module, exports, __require) { /* shared/netcode.js */
 'use strict';
 
 /** Утилиты защиты от «мусора» из сети + лимитеры. Работают и на сервере, и в клиенте. */
@@ -1238,7 +1954,7 @@ module.exports = {
 };
 
     },
-    6: function (module, exports, __require) { /* shared/sync.js */
+    9: function (module, exports, __require) { /* shared/sync.js */
 'use strict';
 
 /**
@@ -1249,11 +1965,15 @@ module.exports = {
  * Формат: [id, x, y, z, heading, state, hpPercent, typeCode].
  */
 
-const { SYNC } = __require(8);
-const V = __require(7);
+const { SYNC } = __require(11);
+const V = __require(10);
 
 const STATE_CODES = { idle: 0, wander: 1, investigate: 2, chase: 3, attack: 4, dead: 5 };
 const STATE_NAMES = ['idle', 'wander', 'investigate', 'chase', 'attack', 'dead'];
+
+// Охрана ТОП-зон: свои состояния, но тот же формат снапшота.
+const GUARD_STATE_CODES = { idle: 0, patrol: 1, aggro: 2, attack: 3, return: 4, dead: 5 };
+const GUARD_STATE_NAMES = ['idle', 'patrol', 'aggro', 'attack', 'return', 'dead'];
 
 function stateCode(state) {
   const code = STATE_CODES[state];
@@ -1343,6 +2063,81 @@ function buildSnapshot(zombies, opts) {
 
 function packSnapshot(snapshot) {
   return JSON.stringify({ t: snapshot.now, z: snapshot.entries });
+}
+
+function guardStateCode(state) {
+  const code = GUARD_STATE_CODES[state];
+  return typeof code === 'number' ? code : 0;
+}
+
+function guardToEntry(guard) {
+  return [
+    guard.id,
+    round(guard.pos.x, 2),
+    round(guard.pos.y, 2),
+    round(guard.pos.z, 2),
+    Math.round(((guard.heading || 0) % 360) * 10) / 10,
+    guardStateCode(guard.state),
+    Math.max(0, Math.min(100, Math.round((guard.health / (guard.maxHealth || 1)) * 100))),
+    Number(guard.typeCode) || 0
+  ];
+}
+
+/** Снапшот охраны ТОП-зон (ту же структуру, что у зомби). */
+function buildGuardSnapshot(guards, opts) {
+  const options = opts || {};
+  const radius = Number(options.radius) || SYNC.SNAPSHOT_RADIUS;
+  const maxEntities = Math.max(1, Math.min(SYNC.SNAPSHOT_MAX_ZOMBIES, Number(options.maxEntities) || SYNC.SNAPSHOT_MAX_ZOMBIES));
+  const maxBytes = Math.max(512, Number(options.maxBytes) || SYNC.MAX_PAYLOAD_BYTES);
+  const origin = options.position || { x: 0, y: 0, z: 0 };
+  const dimension = options.dimension || 0;
+
+  const candidates = [];
+  for (let i = 0; i < guards.length; i += 1) {
+    const guard = guards[i];
+    if (!guard || !guard.alive) continue;
+    if ((guard.dimension || 0) !== dimension) continue;
+    const dist = V.distance(origin, guard.pos);
+    if (dist > radius) continue;
+    candidates.push({ guard, dist });
+  }
+  candidates.sort((a, b) => a.dist - b.dist);
+
+  const entries = [];
+  let bytes = 32;
+  let dropped = 0;
+  for (let i = 0; i < candidates.length; i += 1) {
+    if (entries.length >= maxEntities) {
+      dropped = candidates.length - entries.length;
+      break;
+    }
+    const entry = guardToEntry(candidates[i].guard);
+    const size = JSON.stringify(entry).length + 1;
+    if (bytes + size > maxBytes) {
+      dropped = candidates.length - entries.length;
+      break;
+    }
+    entries.push(entry);
+    bytes += size;
+  }
+
+  return {
+    entries,
+    count: entries.length,
+    bytes,
+    dropped,
+    total: candidates.length,
+    now: Number(options.now) || Date.now()
+  };
+}
+
+/** Собирает один payload снапшота: зомби + охрана. */
+function packCombinedSnapshot(zombieSnapshot, guardSnapshot) {
+  return JSON.stringify({
+    t: (guardSnapshot && guardSnapshot.now) || (zombieSnapshot && zombieSnapshot.now) || Date.now(),
+    z: (zombieSnapshot && zombieSnapshot.entries) || [],
+    g: (guardSnapshot && guardSnapshot.entries) || []
+  });
 }
 
 function unpackSnapshot(payload) {
@@ -1453,12 +2248,17 @@ function pruneClientState(state, now, ttlMs) {
 module.exports = {
   STATE_CODES,
   STATE_NAMES,
+  GUARD_STATE_CODES,
+  GUARD_STATE_NAMES,
   stateCode,
   stateName,
+  guardStateCode,
   chooseInterval,
   toEntry,
   buildSnapshot,
+  buildGuardSnapshot,
   packSnapshot,
+  packCombinedSnapshot,
   unpackSnapshot,
   createClientState,
   applySnapshot,
@@ -1468,7 +2268,7 @@ module.exports = {
 };
 
     },
-    7: function (module, exports, __require) { /* shared/vec3.js */
+    10: function (module, exports, __require) { /* shared/vec3.js */
 'use strict';
 
 /** Небольшие утилиты для работы с позициями (plain-объекты {x,y,z}). */
@@ -1572,7 +2372,7 @@ module.exports = {
 };
 
     },
-    8: function (module, exports, __require) { /* shared/constants.js */
+    11: function (module, exports, __require) { /* shared/constants.js */
 'use strict';
 
 /**
@@ -1657,6 +2457,35 @@ const RATE = {
   MAX_STRING_ARG: 64
 };
 
+const GUARD = {
+  DEFAULT_MODEL: 'S_M_Y_Marine_01',
+  DEFAULT_HEALTH: 200,
+  DEFAULT_ARMOR: 100,
+  PATROL_RADIUS: 50,
+  AGGRO_RANGE: 40,
+  ATTACK_RANGE: 45,
+  ATTACK_RATE_MS: 900,
+  GLOBAL_CAP: 40,
+  CORPSE_TTL_MS: 60000,
+  SPAWN_INTERVAL_MS: 8000,
+  DESPAWN_DISTANCE: 420
+};
+
+const BASE = {
+  DEFAULT_RADIUS: 20,
+  SAFE_PAD: 1.5,
+  MAX_BASES: 8,
+  GATE_CODE_MIN: 3,
+  GATE_CODE_MAX: 8,
+  RESPAWN_BASE_MS: 60000
+};
+
+const LOOT_TIER = {
+  CIVILIAN: 1,
+  MILITARY: 2,
+  TOP: 3
+};
+
 const ITEM_KIND = {
   WEAPON: 'weapon',
   AMMO: 'ammo',
@@ -1675,6 +2504,9 @@ module.exports = {
   ZOMBIE,
   SYNC,
   RATE,
+  GUARD,
+  BASE,
+  LOOT_TIER,
   ITEM_KIND
 };
 

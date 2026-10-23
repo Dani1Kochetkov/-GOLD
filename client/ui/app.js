@@ -15,7 +15,13 @@
     deathUntil: 0,
     selected: null,
     ammo: null,
-    loadingHidden: false
+    loadingHidden: false,
+    entryData: null,
+    entryMode: 'login',
+    entrySubmit: 'login',
+    baseId: null,
+    baseName: null,
+    baseOwner: null
   };
 
   var SLOT_LABELS = {
@@ -652,6 +658,134 @@
     if (evt.key === 'Escape') trigger({ t: 'close' });
   });
 
+  // ------------------------------------------------------------------ entry / base
+
+  function renderEntry(data, mode) {
+    S.entryData = data || {};
+    S.entryMode = mode || (data && data.required === false ? 'play' : 'login');
+    var host = $('entry');
+    if (!host) return;
+    host.classList.remove('hidden');
+
+    var tabs = $('entry-tabs');
+    if (tabs) tabs.classList.toggle('hidden', S.entryMode === 'play');
+
+    var regTab = $('entry-register-tab');
+    if (regTab) regTab.style.display = (S.entryData.allowRegister === false) ? 'none' : '';
+
+    var spawn = $('entry-spawn');
+    if (spawn) {
+      spawn.innerHTML = '';
+      (S.entryData.spawnPoints || []).forEach(function (point) {
+        var opt = document.createElement('option');
+        opt.value = String(point.id);
+        opt.textContent = point.name || String(point.id);
+        spawn.appendChild(opt);
+      });
+      if (!spawn.options.length) {
+        var opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = '—';
+        spawn.appendChild(opt);
+        spawn.disabled = true;
+      } else {
+        spawn.disabled = false;
+      }
+    }
+
+    var pass = $('entry-pass');
+    if (pass) pass.placeholder = S.entryMode === 'register' ? 'пароль (мин. 6 символов)' : 'введите пароль';
+
+    var submit = $('entry-submit');
+    if (submit) {
+      submit.textContent = S.entryMode === 'register' ? 'ЗАРЕГИСТРИРОВАТЬ' : 'ВОЙТИ';
+      submit.dataset.entrySubmit = S.entryMode === 'register' ? 'register' : 'login';
+      S.entrySubmit = submit.dataset.entrySubmit;
+    }
+
+    $('entry-error').classList.add('hidden');
+  }
+
+  function showEntryError(text) {
+    var err = $('entry-error');
+    if (!err) return;
+    err.textContent = String(text || '');
+    err.classList.remove('hidden');
+  }
+
+  function submitEntry() {
+    var login = $('entry-login');
+    var pass = $('entry-pass');
+    var char = $('entry-char');
+    var spawn = $('entry-spawn');
+    var loginVal = login ? login.value.trim() : '';
+    var passVal = pass ? pass.value : '';
+    var charVal = char ? char.value.trim() : '';
+    if (!loginVal) { showEntryError('Введите логин'); return; }
+    if (!passVal) { showEntryError('Введите пароль'); return; }
+    var payload = {
+      username: loginVal,
+      password: passVal,
+      register: (S.entrySubmit === 'register'),
+      character: charVal || loginVal
+    };
+    if (spawn && spawn.options.length) payload.spawnPoint = spawn.value;
+    trigger({ t: 'entrySubmit', data: payload });
+  }
+
+  function renderBasePanel(id, name, owner) {
+    S.baseId = String(id || '');
+    S.baseName = name || S.baseId;
+    S.baseOwner = owner || null;
+    $('base-name').textContent = S.baseName;
+    var ownerEl = $('base-owner');
+    ownerEl.textContent = S.baseOwner ? ('Владелец: ' + S.baseOwner) : 'Не занята';
+    var gate = $('base-gate');
+    gate.textContent = 'Ворота: замкнуты';
+    gate.className = 'base-gate closed';
+    $('base-hint').textContent = S.baseOwner ? 'У вас есть права на управление базой.' : 'Нажмите «Занять базу».';
+    var claimBtn = $('base-claim');
+    if (claimBtn) claimBtn.style.display = S.baseOwner ? 'none' : '';
+    var unclaimBtn = $('base-unclaim');
+    if (unclaimBtn) unclaimBtn.style.display = S.baseOwner ? '' : 'none';
+    $('base').classList.remove('hidden');
+  }
+
+  function sendBaseAction(act, code) {
+    if (!S.baseId) return;
+    if (act === 'claim') trigger({ t: 'baseClaim', base: S.baseId });
+    else if (act === 'unclaim') trigger({ t: 'baseUnclaim', base: S.baseId });
+    else if (act === 'gate') trigger({ t: 'baseGate', base: S.baseId });
+    else if (act === 'code') trigger({ t: 'baseCode', base: S.baseId, code: String(code || '') });
+  }
+
+  document.addEventListener('click', function (evt) {
+    var target = evt.target;
+    var entryTab = target.closest ? target.closest('[data-entry-tab]') : null;
+    if (entryTab) {
+      S.entryMode = entryTab.getAttribute('data-entry-tab');
+      renderEntry(S.entryData, S.entryMode);
+      return;
+    }
+    var entrySubmit = target.closest ? target.closest('[data-entry-submit]') : null;
+    if (entrySubmit) {
+      submitEntry();
+      return;
+    }
+    var baseAct = target.closest ? target.closest('[data-base-act]') : null;
+    if (baseAct) {
+      var act = baseAct.getAttribute('data-base-act');
+      if (act === 'code') {
+        var code = window.prompt ? window.prompt('Пин-код ворот (3–8 цифр):') : null;
+        if (code === null) return;
+        sendBaseAction('code', String(code).trim());
+      } else {
+        sendBaseAction(act);
+      }
+      return;
+    }
+  });
+
   // ------------------------------------------------------------------ приём сообщений
 
   function receive(raw) {
@@ -719,6 +853,33 @@
         break;
       case 'visible':
         document.getElementById('app').style.display = msg.visible ? 'block' : 'none';
+        break;
+      case 'entry':
+        renderEntry(msg.data, msg.action);
+        break;
+      case 'entryOk':
+        var entryHost = $('entry');
+        if (entryHost) entryHost.classList.add('hidden');
+        toast('Добро пожаловать в GOLD DAYZ', 'success');
+        break;
+      case 'entryFail':
+        showEntryError((msg.data && msg.data.reason) || 'Не удалось войти');
+        break;
+      case 'basePanel':
+        renderBasePanel(msg.base, msg.name, msg.owner);
+        break;
+      case 'baseUpdate':
+        if (msg.data && msg.data.id && msg.data.id === S.baseId) {
+          S.baseOwner = msg.data.owner || null;
+          $('base-owner').textContent = S.baseOwner ? ('Владелец: ' + S.baseOwner) : 'Не занята';
+          var gateEl = $('base-gate');
+          gateEl.textContent = msg.data.open ? 'Ворота: отворены' : 'Ворота: замкнуты';
+          gateEl.className = 'base-gate ' + (msg.data.open ? 'open' : 'closed');
+          var claimBtn2 = $('base-claim');
+          if (claimBtn2) claimBtn2.style.display = S.baseOwner ? 'none' : '';
+          var unclaimBtn2 = $('base-unclaim');
+          if (unclaimBtn2) unclaimBtn2.style.display = S.baseOwner ? '' : 'none';
+        }
         break;
       default:
         break;

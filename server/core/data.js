@@ -44,12 +44,14 @@ function loadData(rootDir, overrides) {
   const zombiesFile = path.join(dataDir, 'zombies.json');
   const mapFile = path.join(dataDir, 'map.json');
   const lootFile = path.join(dataDir, 'loot.json');
+  const guardsFile = path.join(dataDir, 'guards.json');
   const configFile = path.join(dataDir, 'gold.config.json');
 
   const itemsDoc = readJson(itemsFile);
   const zombiesDoc = readJson(zombiesFile);
   const mapDoc = readJson(mapFile);
   const lootDoc = readJson(lootFile);
+  const guardsDoc = readJson(guardsFile, { guards: [] });
   const configDoc = readJson(configFile);
 
   const items = itemsDoc.items || [];
@@ -87,6 +89,25 @@ function loadData(rootDir, overrides) {
     }
   }
 
+  // ---- нпц-охрана
+  const guardTypes = (guardsDoc && guardsDoc.guards) || [];
+  const guardIndex = Object.create(null);
+  for (let i = 0; i < guardTypes.length; i += 1) {
+    const def = guardTypes[i];
+    if (!def.id) throw new Error(`guards.json: тип без id (индекс ${i})`);
+    if (guardIndex[def.id]) throw new Error(`guards.json: дубликат id "${def.id}"`);
+    if (!def.model || typeof def.model !== 'string') throw new Error(`guards.json: тип "${def.id}" без model`);
+    if (!(Number(def.health) > 0)) throw new Error(`guards.json: тип "${def.id}" health <= 0`);
+    const weaponDef = itemsIndex[def.weapon];
+    if (!weaponDef || !weaponDef.weapon) {
+      throw new Error(`guards.json: тип "${def.id}" использует неизвестное оружие "${def.weapon}"`);
+    }
+    if (!lootTables[def.dropTable]) {
+      throw new Error(`guards.json: тип "${def.id}" ссылается на неизвестную таблицу лута "${def.dropTable}"`);
+    }
+    guardIndex[def.id] = def;
+  }
+
   const config = deepMerge(configDoc, overrides || {});
 
   return {
@@ -94,12 +115,16 @@ function loadData(rootDir, overrides) {
     itemsIndex,
     zombieTypes,
     zombieIndex,
+    guardTypes,
+    guardIndex,
     lootTables,
+    lootModels: (lootDoc && lootDoc.models) || {},
     map: mapDoc,
     config,
     meta: {
       itemsVersion: (itemsDoc.meta && itemsDoc.meta.version) || 0,
       zombieCount: zombieTypes.length,
+      guardCount: guardTypes.length,
       lootZones: lootZones.length,
       loadedAt: Date.now()
     }

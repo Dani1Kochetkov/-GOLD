@@ -128,11 +128,14 @@ function ensureGamePlayer(player) {
   if (state) {
     try {
       player.dimension = state.dimension;
-      player.spawn(state.pos.x, state.pos.y, state.pos.z);
+      // Пока не прошел вход (логин/пароль) — не спавним в мир.
+      if (!state.pendingEntry) {
+        player.spawn(state.pos.x, state.pos.y, state.pos.z);
+        engineState.set(player.id, { alive: true, weaponKey: '', ammo: -1 });
+      }
     } catch (err) {
       logger.warn(`[spawn] ${player.name}: ${err.message}`);
     }
-    engineState.set(player.id, { alive: true, weaponKey: '', ammo: -1 });
   }
   return state;
 }
@@ -198,9 +201,38 @@ onClient('gold:shot', (playerId, payload) => game.handleShot(playerId, payload))
 onClient('gold:melee', (playerId, payload) => game.handleMelee(playerId, payload));
 onClient('gold:inv', (playerId, payload) => game.handleInventoryAction(playerId, payload));
 onClient('gold:interact', (playerId, payload) => game.handleInteract(playerId, payload));
+onClient('gold:base', (playerId, payload) => {
+  const player = game.players.get(playerId);
+  if (!player) return;
+  game.handleBaseAction(player, payload);
+});
 onClient('gold:moveState', (playerId, payload) => game.handleMoveState(playerId, payload));
 onClient('gold:respawnRequest', (playerId) => game.handleRespawnRequest(playerId));
 onClient('gold:radio', (playerId, text) => game.handleRadio(playerId, text));
+onClient('gold:entrySubmit', (playerId, payload) => {
+  const res = game.handleEntrySubmit(playerId, payload);
+  if (res && res.ok) {
+    // Впервые прошел вход — поднимаем в engine и ставим на спавн.
+    const mpPlayer = mpPlayers.get(playerId);
+    const state = game.players.get(playerId);
+    if (mpPlayer && state && !state.pendingEntry) {
+      try {
+        mpPlayer.dimension = state.dimension;
+        mpPlayer.spawn(state.pos.x, state.pos.y, state.pos.z);
+        engineState.set(playerId, { alive: true, weaponKey: '', ammo: -1 });
+      } catch (err) {
+        logger.warn(`[spawn] ${state.name}: ${err.message}`);
+      }
+    }
+    game.net.send(playerId, EVENTS.ENTRY_OK, JSON.stringify({
+      name: res.username || (state && state.name) || 'Выживший'
+    }));
+  } else {
+    game.net.send(playerId, EVENTS.ENTRY_FAIL, JSON.stringify({
+      reason: (res && res.reason) || 'error'
+    }));
+  }
+});
 
 // Клиент присылает координаты метки на карте (админский /tpway).
 onClient('gold:tpway', (playerId, payload) => {

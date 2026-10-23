@@ -62,7 +62,10 @@ function mergeConfig(target, patch) {
 function createGame(options) {
   const opts = options || {};
   const data = opts.data || createData();
-  if (opts.config) data.config = mergeConfig(data.config, opts.config);
+  // Тесты по умолчанию работают без входа (логин/пароль), чтобы addPlayer сразу
+  // спавнил игрока. Включить auth можно через opts.config.
+  const base = mergeConfig(data.config, { auth: { enabled: false } });
+  data.config = opts.config ? mergeConfig(base, opts.config) : base;
   const net = opts.net || createNet();
   let clock = opts.startTime || 1700000000000;
   const game = new Game({

@@ -273,6 +273,68 @@
         "max": 2
       }
     ],
+    "top": [
+      {
+        "item": "heavysniper",
+        "weight": 4,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "heavymg",
+        "weight": 4,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "marksmanrifle",
+        "weight": 6,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "assaultrifle",
+        "weight": 8,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "armor3",
+        "weight": 5,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "surgical_kit",
+        "weight": 6,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "medkit",
+        "weight": 8,
+        "min": 1,
+        "max": 1
+      },
+      {
+        "item": "antirad",
+        "weight": 8,
+        "min": 1,
+        "max": 2
+      },
+      {
+        "item": "ammo_762",
+        "weight": 16,
+        "min": 10,
+        "max": 30
+      },
+      {
+        "item": "ammo_556",
+        "weight": 12,
+        "min": 15,
+        "max": 45
+      }
+    ],
     "industrial": [
       {
         "item": "scrap",
@@ -381,5 +443,14 @@
         "max": 15
       }
     ]
+  },
+  "models": {
+    "weapon": "prop_box_guncase_01a",
+    "ammo": "prop_ld_ammo_pack_02",
+    "medical": "prop_ld_health_pack",
+    "food": "prop_cs_steak",
+    "gear": "prop_cs_duffel_01",
+    "material": "prop_crate_01a",
+    "crate": "prop_crate_01a"
   }
 }

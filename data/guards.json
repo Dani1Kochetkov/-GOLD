@@ -1,0 +1,60 @@
+{
+  "$schema": "./schemas/guards.schema.json",
+  "meta": {
+    "version": 1,
+    "description": "НПЦ-охрана ТОП-зон. Педы-солдаты с повышенным здоровьем, бронёй и автоматами; патрулируют радиусом и стреляют в игрока ближе радиуса агрессии."
+  },
+  "guards": [
+    {
+      "id": "marine",
+      "name": "Морской пехотинец",
+      "model": "S_M_Y_Marine_01",
+      "health": 200,
+      "armor": 100,
+      "weapon": "carbinerifle",
+      "damage": 12,
+      "accuracy": 0.75,
+      "aggroRange": 40,
+      "attackRange": 45,
+      "patrolRadius": 50,
+      "thinkIntervalMs": 500,
+      "attackRateMs": 900,
+      "dropTable": "top",
+      "score": 250
+    },
+    {
+      "id": "armymech",
+      "name": "Армейский мех",
+      "model": "S_M_Y_ArmyMech_01",
+      "health": 240,
+      "armor": 140,
+      "weapon": "assaultrifle",
+      "damage": 15,
+      "accuracy": 0.8,
+      "aggroRange": 45,
+      "attackRange": 50,
+      "patrolRadius": 55,
+      "thinkIntervalMs": 450,
+      "attackRateMs": 800,
+      "dropTable": "top",
+      "score": 350
+    },
+    {
+      "id": "marine_heavy",
+      "name": "Морской пехотинец (тяж)",
+      "model": "S_M_Y_Marine_01",
+      "health": 280,
+      "armor": 160,
+      "weapon": "heavymg",
+      "damage": 20,
+      "accuracy": 0.7,
+      "aggroRange": 40,
+      "attackRange": 60,
+      "patrolRadius": 60,
+      "thinkIntervalMs": 600,
+      "attackRateMs": 1100,
+      "dropTable": "top",
+      "score": 500
+    }
+  ]
+}

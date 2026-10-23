@@ -82,6 +82,35 @@ const RATE = {
   MAX_STRING_ARG: 64
 };
 
+const GUARD = {
+  DEFAULT_MODEL: 'S_M_Y_Marine_01',
+  DEFAULT_HEALTH: 200,
+  DEFAULT_ARMOR: 100,
+  PATROL_RADIUS: 50,
+  AGGRO_RANGE: 40,
+  ATTACK_RANGE: 45,
+  ATTACK_RATE_MS: 900,
+  GLOBAL_CAP: 40,
+  CORPSE_TTL_MS: 60000,
+  SPAWN_INTERVAL_MS: 8000,
+  DESPAWN_DISTANCE: 420
+};
+
+const BASE = {
+  DEFAULT_RADIUS: 20,
+  SAFE_PAD: 1.5,
+  MAX_BASES: 8,
+  GATE_CODE_MIN: 3,
+  GATE_CODE_MAX: 8,
+  RESPAWN_BASE_MS: 60000
+};
+
+const LOOT_TIER = {
+  CIVILIAN: 1,
+  MILITARY: 2,
+  TOP: 3
+};
+
 const ITEM_KIND = {
   WEAPON: 'weapon',
   AMMO: 'ammo',
@@ -100,5 +129,8 @@ module.exports = {
   ZOMBIE,
   SYNC,
   RATE,
+  GUARD,
+  BASE,
+  LOOT_TIER,
   ITEM_KIND
 };

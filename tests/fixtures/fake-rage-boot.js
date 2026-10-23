@@ -115,10 +115,11 @@ function fire(eventName, ...args) {
 // Жизненный цикл: join → ready → клиентские события.
 fire('playerJoin');
 setTimeout(() => {
-  fire('playerReady');
-  setTimeout(() => {
-    fire('gold:ready');
-    fire('gold:moveState', JSON.stringify({ m: 1, s: 0, w: 0, f: 0 }));
+    fire('playerReady');
+    setTimeout(() => {
+      fire('gold:ready');
+      fire('gold:entrySubmit', JSON.stringify({ username: 'BootTester', password: 'test1234', register: true, character: 'BootTester' }));
+      fire('gold:moveState', JSON.stringify({ m: 1, s: 0, w: 0, f: 0 }));
     fire('gold:interact', JSON.stringify({}));
     fire('gold:inv', JSON.stringify({ a: 'equip', slot: 0 }));
     fire('gold:inv', JSON.stringify({ a: 'reload' }));

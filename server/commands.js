@@ -21,6 +21,10 @@ const HELP_PLAYER = [
   '/reload — перезарядить оружие (или R)',
   '/fill — наполнить флягу у воды',
   '/radio <текст> — общий эфир (нужна рация)',
+  '/base — база рядом (owner/ворота)',
+  '/baseclaim — занять базу',
+  '/basegate — открыть/закрыть ворота',
+  '/basecode <3-8 цифр> — пин-код ворот',
   '/help — помощь',
   '/respawn — новая жизнь после смерти'
 ].join('\n');
@@ -125,6 +129,51 @@ function register(game, mp, logger) {
 
   mp.events.addCommand('take', playerOnly((player) => {
     game.handleInteract(player.id, '{}');
+  }));
+
+  // ----------------------------------------------------------- базы (System 3)
+
+  const nearestBaseInfo = (player) => {
+    const state = game.players.get(player.id);
+    if (!state) return null;
+    const base = game.findNearestBase(state.pos, 60);
+    return base ? { base, state } : null;
+  };
+
+  mp.events.addCommand('base', playerOnly((player) => {
+    const found = nearestBaseInfo(player);
+    if (!found) {
+      say(player, '! База не найдена (ближайшая в 60 м).');
+      return;
+    }
+    const { base } = found;
+    say(player, `База: ${base.name} | радиус ${Math.round(base.radius)} м`);
+    say(player, `Владелец: ${base.ownerName || 'свободна'} | ворота: ${base.gate.open ? 'отворены' : 'закрыты'}`);
+    if (!base.owner) say(player, 'Свободна — /baseclaim.');
+    else if (base.owner === found.state.id) say(player, 'Ваша база — /basegate, /basecode <3-8 цифр>.');
+    else say(player, 'Чужая база — /basegate с пин-кодом.');
+  }));
+
+  mp.events.addCommand('baseclaim', playerOnly((player) => {
+    const state = game.players.get(player.id);
+    if (!state) return;
+    game.handleBaseAction(player, { base: '', act: 'claim' });
+  }));
+
+  mp.events.addCommand('baseunclaim', playerOnly((player) => {
+    game.handleBaseAction(player, { base: '', act: 'unclaim' });
+  }));
+
+  mp.events.addCommand('basegate', playerOnly((player) => {
+    game.handleBaseAction(player, { base: '', act: 'gate' });
+  }));
+
+  mp.events.addCommand('basecode', playerOnly((player, code) => {
+    if (!code) {
+      say(player, '! /basecode <3-8 цифр> — установить пин-код ворот.');
+      return;
+    }
+    game.handleBaseAction(player, { base: '', act: 'code', code });
   }));
 
   mp.events.addCommand('reloadweapon', playerOnly((player) => {

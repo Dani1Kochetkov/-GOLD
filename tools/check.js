@@ -434,13 +434,21 @@ function validateAccess(report) {
   if (access.whitelistEnabled === true) {
     report.pass(`вайтлист включён: ${total} допущенных (ники/SC-ID/IP)`);
   } else {
-    report.pass('вайтлист выключен: вход без логина и пароля');
+    report.pass('вайтлист выключен: вход без списка допуска');
   }
 
   const admin = config.admin || {};
   if (admin.enabled !== false && admin.commandsFromLocalhostOnly !== true
     && (!Array.isArray(admin.names) || admin.names.length === 0)) {
     report.warn('admin: админка открыта всем (commandsFromLocalhostOnly=false и пустой admin.names)');
+  }
+
+  // Система входа (System 4): логин/пароль + выбор спавна.
+  const auth = config.auth || {};
+  if (auth.enabled === true) {
+    report.pass(`вход по логину/паролю: включён (регистрация ${auth.allowRegister !== false ? 'разрешена' : 'запрещена'}, мин. пароль ${auth.passwordMinLength || 6} символов)`);
+  } else {
+    report.pass('вход по логину/паролю: выключен (игроки заходят сразу на спавн)');
   }
 }
 
