@@ -1,0 +1,9 @@
+{
+  "name": "gold-dayz-ragemp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "GOLD DAYZ RAGE Multiplayer local development resources",
+  "scripts": {
+    "test": "node --test"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "announce": false,
+  "bind": "127.0.0.1",
+  "gamemode": "GOLD DAYZ",
+  "name": "GOLD DAYZ | Local Test Server",
+  "maxplayers": 32,
+  "port": 22005,
+  "stream-distance": 500.0,
+  "voice-chat": false,
+  "enable-nodejs": true
+}

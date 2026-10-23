@@ -1,0 +1,20 @@
+{
+  "serverName": "GOLD DAYZ",
+  "spawn": { "x": 1693.5, "y": 3585.2, "z": 35.3, "heading": 210.0 },
+  "zombie": {
+    "model": "u_m_y_zombie_01",
+    "maxAlive": 18,
+    "health": 100,
+    "hitDamage": 35,
+    "hitRange": 3.2,
+    "hitCooldownMs": 850,
+    "zones": [
+      { "x": 1693.5, "y": 3585.2, "z": 35.3, "radius": 110 }
+    ]
+  },
+  "inventory": {
+    "water": { "label": "Вода", "max": 20 },
+    "food": { "label": "Консервы", "max": 20 },
+    "bandage": { "label": "Бинт", "max": 10 }
+  }
+}

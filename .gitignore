@@ -1,0 +1,13 @@
+# RAGE MP server runtime and downloaded server binaries
+ragemp-server
+ragemp-server.exe
+server-files/
+logs/
+
+# Player persistence and temporary atomic-write files
+packages/gold-dayz/data/*.json
+packages/gold-dayz/data/*.tmp
+
+# Node / editor
+node_modules/
+.DS_Store
